@@ -1,0 +1,55 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Comptes{% endblock %}
+{% block contenu %}
+<div class="page__tete"><div><h1>Comptes</h1><p>{{ nb_total }} compte{{ nb_total|pluralize }} · {{ nb_non_actives }} en attente d'activation. Un compte ne se supprime jamais : on le désactive.</p></div>
+  <a class="btn btn--primaire" href="#nouveau">Nouveau compte</a></div>
+
+<div class="grille grille--principale">
+  <section class="carte" style="padding:0" aria-labelledby="t-liste">
+    <div class="carte__tete" style="padding:var(--e-5) var(--e-6) 0"><h2 id="t-liste">Tous les comptes</h2>
+      <form method="get" class="ligne"><label class="petit" for="filtre">Afficher</label>
+        <select id="filtre" name="filtre" class="entree" style="width:auto;min-height:40px" onchange="this.form.submit()">
+          <option value="" {% if not filtre %}selected{% endif %}>Tous</option>
+          <option value="non_actives" {% if filtre == "non_actives" %}selected{% endif %}>En attente d'activation</option>
+          <option value="inactifs" {% if filtre == "inactifs" %}selected{% endif %}>Désactivés</option>
+          <option value="MEMBRE" {% if filtre == "MEMBRE" %}selected{% endif %}>Membres</option>
+          <option value="GESTION" {% if filtre == "GESTION" %}selected{% endif %}>Gestion</option>
+          <option value="BUREAU" {% if filtre == "BUREAU" %}selected{% endif %}>Bureau</option>
+          <option value="TECHNIQUE" {% if filtre == "TECHNIQUE" %}selected{% endif %}>Administrateurs</option>
+        </select></form></div>
+    <div class="tableau-conteneur" style="border:none">
+      <table class="tableau tableau--dense">
+        <thead><tr><th>Personne</th><th>Rôle</th><th>Société</th><th>État</th><th>Dernière connexion</th><th></th></tr></thead>
+        <tbody>{% for p in profils %}
+          <tr>
+            <td><strong>{{ p.first_name }} {{ p.last_name }}</strong><div class="petit">{{ p.username }}</div></td>
+            <td>{% if p.role_metier == "MEMBRE" %}Membre{% elif p.role_metier == "GESTION" %}Gestion{% elif p.role_metier == "BUREAU" %}Bureau{% else %}Administrateur{% endif %}</td>
+            <td>{{ p.membre.code|default:"—" }}</td>
+            <td>{% if not p.is_active %}<span class="badge badge--rejete">Désactivé</span>{% elif not p.compte_active %}<span class="badge badge--attente">À activer</span>{% else %}<span class="badge badge--soumise">Actif</span>{% endif %}</td>
+            <td class="petit">{{ p.derniere_connexion|date_heure }}</td>
+            <td class="droite"><a class="btn btn--petit btn--secondaire" href="{% url 'portail:admin_compte' p.id %}">Gérer</a></td>
+          </tr>{% empty %}<tr><td colspan="6" class="vide">Aucun compte dans cette sélection.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <aside class="carte carte--accent" id="nouveau" aria-labelledby="t-nouveau">
+    <div class="carte__tete"><h3 id="t-nouveau">Nouveau compte</h3></div>
+    <p class="petit">La personne reçoit un lien valable 24 heures et choisit elle-même son mot de passe. Vous ne manipulez jamais de mot de passe.</p>
+    <form method="post" novalidate>{% csrf_token %}
+      {% if formulaire.non_field_errors %}<div class="message message--erreur mb-4"><svg class="icone"><use href="#i-erreur"/></svg><p>{{ formulaire.non_field_errors.0 }}</p></div>{% endif %}
+      {% for champ in formulaire %}
+        {% if champ.name == "role" %}
+          <div class="champ"><span class="champ__libelle">Rôle</span>{% for r in champ %}<label class="case" style="margin-bottom:var(--e-2);padding:var(--e-3)">{{ r.tag }}<span>{{ r.choice_label }}</span></label>{% endfor %}</div>
+        {% elif champ.name == "envoyer" %}
+          <label class="case" style="margin-bottom:var(--e-4)">{{ champ }}<span><strong>{{ champ.label }}</strong><span class="petit">Sinon, le lien s'affiche et vous le transmettez vous-même.</span></span></label>
+        {% else %}
+          <div class="champ {% if champ.errors %}champ--erreur{% endif %}"><label for="{{ champ.id_for_label }}">{{ champ.label }}</label>{{ champ }}{% for e in champ.errors %}<span class="champ__erreur">{{ e }}</span>{% endfor %}</div>
+        {% endif %}
+      {% endfor %}
+      <button class="btn btn--primaire btn--bloc" type="submit">Créer le compte</button>
+    </form>
+  </aside>
+</div>
+{% endblock %}

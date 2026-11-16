@@ -1,0 +1,7 @@
+{% extends "portail/compte/_base_compte.html" %}
+{% block titre %}Mot de passe enregistré{% endblock %}
+{% block carte %}
+<h1>C'est enregistré</h1>
+<p class="sous">Vous pouvez maintenant vous connecter avec votre adresse e-mail et votre nouveau mot de passe.</p>
+<a class="btn btn--primaire btn--large btn--bloc" href="{% url 'portail:connexion' %}">Se connecter</a>
+{% endblock %}

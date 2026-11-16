@@ -1,0 +1,14 @@
+{% extends "portail/compte/_base_compte.html" %}
+{% block titre %}Mot de passe oublié{% endblock %}
+{% block carte %}
+<h1>Mot de passe oublié</h1>
+<p class="sous">Indiquez votre adresse e-mail : si elle correspond à un compte, vous recevrez un lien valable 24 heures pour choisir un nouveau mot de passe.</p>
+<form method="post" novalidate>{% csrf_token %}
+  <div class="champ {% if form.email.errors %}champ--erreur{% endif %}">
+    <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>{{ form.email }}
+    {% for e in form.email.errors %}<span class="champ__erreur">{{ e }}</span>{% endfor %}
+  </div>
+  <button class="btn btn--primaire btn--large btn--bloc" type="submit">Recevoir le lien</button>
+  <div class="liens"><a href="{% url 'portail:connexion' %}">Retour à la connexion</a></div>
+</form>
+{% endblock %}

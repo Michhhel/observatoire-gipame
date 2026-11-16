@@ -1,0 +1,21 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Membres{% endblock %}
+{% block contenu %}
+<div class="page__tete"><div><h1>Membres déclarants</h1><p>Qui doit déclarer, depuis quand, quelles marques. C'est ce qui décide du contenu des gabarits et du nombre de déclarations attendues chaque mois.</p></div>
+  <a class="btn btn--primaire" href="{% url 'portail:gestion_membre_nouveau' %}">Ajouter un membre</a></div>
+<section class="carte" style="padding:0">
+  <div class="tableau-conteneur" style="border:none">
+  <table class="tableau">
+    <thead><tr><th>Membre</th><th>Groupe</th><th>Adhésion en cours</th><th>Marques</th><th class="droite">Comptes actifs</th></tr></thead>
+    <tbody>
+    {% for l in lignes %}
+      <tr><td><a href="{% url 'portail:gestion_membre' l.m.id %}"><strong>{{ l.m.code }}</strong></a><div class="petit">{{ l.m.raison_sociale }}</div></td>
+        <td class="petit">{{ l.m.groupe.nom|default:"—" }}</td>
+        <td>{% if l.adhesion %}<span class="badge badge--soumise">depuis {{ l.adhesion.date_debut|mois_court }}</span>{% if l.adhesion.date_fin %} <span class="petit discret">jusqu'à {{ l.adhesion.date_fin|mois_court }}</span>{% endif %}{% else %}<span class="badge badge--neutre">Aucune</span>{% endif %}</td>
+        <td class="petit">{{ l.marques|join:", "|default:"—" }}</td>
+        <td class="droite">{% if l.comptes %}{{ l.comptes }}{% else %}<span class="badge badge--retard">0</span>{% endif %}</td></tr>
+    {% empty %}<tr><td colspan="5" class="vide">Aucun membre : commencez par « Ajouter un membre », ou chargez l'historique (guide de démarrage).</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+</section>
+{% endblock %}

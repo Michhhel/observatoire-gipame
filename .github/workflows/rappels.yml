@@ -1,0 +1,31 @@
+# Rappels de dépôt automatiques (gratuit) : chaque jour à 8 h (heure d'Abidjan = UTC), la commande regarde si
+# c'est un jour de rappel (J-3, J+1, J+7 autour de la date limite) et n'envoie rien sinon.
+# Secrets à créer dans GitHub (Settings > Secrets and variables > Actions) : GIPAME_DB_URL (rôle gipame_app),
+# DJANGO_SECRET_KEY, GIPAME_URL_PUBLIQUE, GIPAME_EMAIL_EXPEDITEUR, GIPAME_SMTP_HOTE, GIPAME_SMTP_UTILISATEUR,
+# GIPAME_SMTP_MOT_DE_PASSE. Lancement manuel possible : onglet Actions > Rappels de dépôt > Run workflow.
+name: Rappels de dépôt
+on:
+  schedule:
+    - cron: "0 8 * * *"
+  workflow_dispatch:
+jobs:
+  rappels:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python manage.py envoyer_rappels --si-echeance
+        env:
+          DJANGO_DEBUG: "0"
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          GIPAME_DB_URL: ${{ secrets.GIPAME_DB_URL }}
+          GIPAME_URL_PUBLIQUE: ${{ secrets.GIPAME_URL_PUBLIQUE }}
+          GIPAME_EMAIL_EXPEDITEUR: ${{ secrets.GIPAME_EMAIL_EXPEDITEUR }}
+          GIPAME_SMTP_HOTE: ${{ secrets.GIPAME_SMTP_HOTE }}
+          GIPAME_SMTP_UTILISATEUR: ${{ secrets.GIPAME_SMTP_UTILISATEUR }}
+          GIPAME_SMTP_MOT_DE_PASSE: ${{ secrets.GIPAME_SMTP_MOT_DE_PASSE }}

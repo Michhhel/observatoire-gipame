@@ -1,0 +1,11 @@
+Bonjour{% if prenom %} {{ prenom }}{% endif %},
+
+{% if en_retard %}La déclaration des ventes {{ mois }} de {{ societe }} n'a pas encore été reçue (date limite : {{ date_limite }}).{% else %}La déclaration des ventes {{ mois }} de {{ societe }} est attendue avant le {{ date_limite }}.{% endif %}
+Elle prend quelques minutes : téléchargez votre fichier, remplissez-le, déposez-le.
+
+{{ url }}
+
+Si vous avez déjà envoyé votre fichier sans le soumettre, il reste à cocher l'attestation et à cliquer sur « Soumettre ».
+Une question ? Répondez simplement à ce message.
+
+— L'Observatoire GIPAME

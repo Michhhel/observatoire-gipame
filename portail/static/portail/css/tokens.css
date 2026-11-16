@@ -1,0 +1,120 @@
+/* ============================================================================
+   Observatoire GIPAME — variables de design (« tokens »)
+   ----------------------------------------------------------------------------
+   Source unique de la charte : couleurs, typographie, espacements, rayons,
+   ombres, durées. Tout le reste du CSS (base.css) ne fait que les utiliser.
+   Pour changer l'apparence de l'application, modifier CE fichier d'abord.
+   Palette dérivée du logo GIPAME : bleu nuit (#0B1238) et bleu pétrole (#246A90).
+   Contrastes vérifiés WCAG AA (texte sur fond clair ≥ 4,5:1).
+   ============================================================================ */
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../fonts/inter-latin-wght-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../fonts/inter-latin-ext-wght-normal.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  /* --- Couleurs de marque ------------------------------------------------ */
+  --nuit-950: #070C2A;
+  --nuit-900: #0B1238;   /* logo GIPAME : « GIP » */
+  --nuit-800: #141E5A;
+  --nuit-700: #1F2C7A;
+  --petrole-800: #184A66;
+  --petrole-700: #1E5A7C;
+  --petrole-600: #246A90;  /* logo GIPAME : « AME » */
+  --petrole-500: #2E84B2;
+  --petrole-300: #7FC4E6;
+  --petrole-100: #D9EBF4;
+  --petrole-50:  #EEF6FA;
+
+  /* --- Couleurs sémantiques (ne jamais coder une info par la couleur seule) */
+  --succes-700: #166A45;
+  --succes-600: #1F8A5B;
+  --succes-100: #DDF3E7;
+  --alerte-700: #8A4B06;    /* ambre : alertes à vérifier */
+  --alerte-600: #B45309;
+  --alerte-100: #FDF0DC;
+  --erreur-700: #9A1C12;    /* rouge : réservé aux erreurs bloquantes */
+  --erreur-600: #B42318;
+  --erreur-100: #FCE8E6;
+
+  /* --- Neutres chauds ------------------------------------------------------ */
+  --fond:        #F6F6F3;
+  --surface:     #FFFFFF;
+  --surface-2:   #F0F0EC;
+  --bord:        #E2E2DC;
+  --bord-fort:   #C9C9C2;
+  --texte:       #1A1B22;
+  --texte-2:     #52535E;
+  --texte-3:     #7A7B86;
+  --texte-inverse: #FFFFFF;
+
+  /* --- Rôles ----------------------------------------------------------------- */
+  --primaire:        var(--nuit-900);
+  --primaire-survol: var(--nuit-800);
+  --accent:          var(--petrole-600);
+  --accent-survol:   var(--petrole-700);
+  --lien:            var(--petrole-700);
+  --anneau-focus:    0 0 0 3px rgba(46, 132, 178, 0.45);
+
+  /* --- Typographie ------------------------------------------------------------ */
+  --police: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+  --t-12: 0.75rem;
+  --t-13: 0.8125rem;
+  --t-14: 0.875rem;
+  --t-16: 1rem;
+  --t-18: 1.125rem;
+  --t-22: 1.375rem;
+  --t-28: 1.75rem;
+  --t-36: 2.25rem;
+  --interligne: 1.5;
+
+  /* --- Espacements (base 4 px) ------------------------------------------------- */
+  --e-1: 0.25rem;
+  --e-2: 0.5rem;
+  --e-3: 0.75rem;
+  --e-4: 1rem;
+  --e-5: 1.25rem;
+  --e-6: 1.5rem;
+  --e-8: 2rem;
+  --e-10: 2.5rem;
+  --e-12: 3rem;
+  --e-16: 4rem;
+
+  /* --- Formes ----------------------------------------------------------------- */
+  --rayon-s: 8px;
+  --rayon-m: 12px;
+  --rayon-l: 16px;
+  --rayon-rond: 999px;
+  --ombre-1: 0 1px 2px rgba(11, 18, 56, 0.06), 0 1px 3px rgba(11, 18, 56, 0.04);
+  --ombre-2: 0 4px 14px rgba(11, 18, 56, 0.08), 0 2px 4px rgba(11, 18, 56, 0.04);
+  --ombre-3: 0 12px 32px rgba(11, 18, 56, 0.14);
+
+  /* --- Mouvement --------------------------------------------------------------- */
+  --duree-1: 150ms;
+  --duree-2: 250ms;
+  --courbe: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* --- Gabarit de page --------------------------------------------------------- */
+  --largeur-max: 1180px;
+  --hauteur-entete: 64px;
+  --cible-tactile: 44px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --duree-1: 0ms; --duree-2: 0ms; }
+}

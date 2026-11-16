@@ -1,0 +1,48 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Proposition · {{ produit.libelle_affiche }}{% endblock %}
+{% block contenu %}
+<div class="page__tete"><div><span class="kpi__libelle">Proposition de {{ produit.propose_par.code }} · {{ produit.cree_le|date_courte }}</span><h1>{{ marque.nom }} {{ produit.libelle_affiche }}</h1></div>
+  <span class="badge {{ produit.statut|badge_statut }}">{{ produit.statut|libelle_statut }}</span></div>
+
+<div class="grille grille--principale">
+  <section class="carte" aria-labelledby="t-decision">
+    <div class="carte__tete"><h2 id="t-decision">Décision</h2></div>
+    {% if produit.statut != "PROPOSE" %}
+      <p>Traitée le {{ produit.decide_le|date_heure }}.{% if produit.motif_decision %} Motif : {{ produit.motif_decision }}{% endif %}</p>
+    {% else %}
+    <form method="post" novalidate>{% csrf_token %}
+      {% if formulaire.non_field_errors %}<div class="message message--erreur mb-4"><svg class="icone"><use href="#i-erreur"/></svg><p>{{ formulaire.non_field_errors.0 }}</p></div>{% endif %}
+      <div class="champ"><span class="champ__libelle">Que faire ?</span>
+        {% for r in formulaire.decision %}<label class="case" style="margin-bottom:var(--e-2)">{{ r.tag }}<span><strong>{{ r.choice_label }}</strong><span class="petit">{% if r.data.value == "VALIDER" %}Le produit entre au catalogue, classé dans la grille, et apparaît dans les gabarits des membres de la marque.{% elif r.data.value == "FUSIONNER" %}C'est un doublon d'un produit existant : la proposition est rattachée à ce produit.{% else %}Hors périmètre ou erroné : le motif est conservé et visible par le membre.{% endif %}</span></span></label>{% endfor %}
+      </div>
+      <div class="grille grille--2">
+        <div class="champ {% if formulaire.nom_modele.errors %}champ--erreur{% endif %}"><label for="{{ formulaire.nom_modele.id_for_label }}">{{ formulaire.nom_modele.label }}</label>{{ formulaire.nom_modele }}{% for e in formulaire.nom_modele.errors %}<span class="champ__erreur">{{ e }}</span>{% endfor %}</div>
+        <div class="champ {% if formulaire.finition.errors %}champ--erreur{% endif %}"><label for="{{ formulaire.finition.id_for_label }}">{{ formulaire.finition.label }}</label>{{ formulaire.finition }}{% for e in formulaire.finition.errors %}<span class="champ__erreur">{{ e }}</span>{% endfor %}</div>
+      </div>
+      <div class="champ {% if formulaire.segment.errors %}champ--erreur{% endif %}"><label for="{{ formulaire.segment.id_for_label }}">{{ formulaire.segment.label }} <span class="discret">(pour valider)</span></label>{{ formulaire.segment }}{% for e in formulaire.segment.errors %}<span class="champ__erreur">{{ e }}</span>{% endfor %}</div>
+      <div class="champ {% if formulaire.cible.errors %}champ--erreur{% endif %}"><label for="{{ formulaire.cible.id_for_label }}">{{ formulaire.cible.label }} <span class="discret">(pour fusionner)</span></label>{{ formulaire.cible }}{% for e in formulaire.cible.errors %}<span class="champ__erreur">{{ e }}</span>{% endfor %}</div>
+      <div class="champ {% if formulaire.motif.errors %}champ--erreur{% endif %}"><label for="{{ formulaire.motif.id_for_label }}">{{ formulaire.motif.label }} <span class="discret">(obligatoire pour rejeter)</span></label>{{ formulaire.motif }}{% for e in formulaire.motif.errors %}<span class="champ__erreur">{{ e }}</span>{% endfor %}</div>
+      <div class="actions"><button class="btn btn--primaire btn--large" type="submit">Enregistrer la décision</button><a class="btn btn--discret" href="{% url 'portail:gestion_propositions' %}">Retour à la liste</a></div>
+    </form>
+    {% endif %}
+  </section>
+
+  <aside class="empile">
+    <section class="carte"><h3>Ce que le membre a saisi</h3>
+      <table class="tableau tableau--dense mt-2"><tbody>
+        <tr><td>Marque</td><td><strong>{{ marque.nom }}</strong></td></tr>
+        <tr><td>Modèle</td><td>{{ nom_modele }}</td></tr>
+        <tr><td>Version</td><td>{{ produit.finition }}</td></tr>
+        <tr><td>Énergie</td><td>{{ produit.energie.libelle|default:"—" }}</td></tr>
+        <tr><td>Boîte</td><td>{{ produit.boite.libelle|default:"—" }}</td></tr>
+        <tr><td>Cylindrée / puissance</td><td>{{ produit.cylindree_cm3|default:"—" }} cm³ / {{ produit.puissance_fiscale_cv|default:"—" }} CV</td></tr>
+        <tr><td>Places / PTAC / charge</td><td>{{ produit.nb_places|default:"—" }} / {{ produit.ptac_kg|default:"—" }} / {{ produit.charge_utile_kg|default:"—" }}</td></tr>
+        <tr><td>Motricité</td><td>{{ produit.motricite|default:"—" }}</td></tr>
+        <tr><td>Type suggéré</td><td>{{ produit.segment_propose|default:"—" }}</td></tr>
+        <tr><td>Remarque</td><td>{{ produit.note_proposition|default:"—" }}</td></tr>
+      </tbody></table></section>
+    <section class="carte"><h3>Produits existants de la marque</h3>
+      <ul class="petit mt-2" style="max-height:320px;overflow:auto;padding-left:1.2em;margin:0">{% for p in proches %}<li>{{ p.code }} · {{ p.libelle_affiche }}</li>{% empty %}<li>Aucun.</li>{% endfor %}</ul></section>
+  </aside>
+</div>
+{% endblock %}

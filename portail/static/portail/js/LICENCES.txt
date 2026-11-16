@@ -1,0 +1,4 @@
+Bibliothèques auto-hébergées (aucun CDN) :
+- htmx 2.0.11 (htmx.min.js) — licence BSD 2-Clause — https://htmx.org
+- Chart.js 4.6.1 (chart.umd.js, version minifiée ; commentaire sourceMappingURL retiré pour collectstatic) — licence MIT — https://www.chartjs.org
+Pour mettre à jour : télécharger la nouvelle version depuis le site officiel, remplacer le fichier, noter la version ici.

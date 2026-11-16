@@ -1,0 +1,30 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Accès exceptionnel{% endblock %}
+{% block contenu %}
+<div class="page__tete"><div><span class="kpi__libelle">Demande du {{ demande.cree_le|date_heure }}</span>
+  <h1>Données individuelles · {{ demande.membre_cible.code|default:"tous les membres" }}</h1>
+  <p>{{ demande.mois_debut|mois_long }}{% if demande.mois_fin != demande.mois_debut %} → {{ demande.mois_fin|mois_long }}{% endif %} · fenêtre de {{ demande.duree_minutes }} minutes après le dernier accord requis.</p></div></div>
+
+<div class="message message--alerte mb-6"><svg class="icone"><use href="#i-alerte"/></svg>
+  <p><strong>Chaque lecture est journalisée</strong> (qui, quand, combien de lignes) et figure dans le rapport d'accès remis au bureau. Les chiffres ne doivent être ni copiés, ni transmis, ni utilisés hors du motif de la demande. Aucun export n'est possible.</p></div>
+
+<div class="grille grille--principale">
+  <section class="carte" aria-labelledby="t-donnees" {% if lignes %}style="padding:0"{% endif %}>
+    {% if lignes is None %}
+      <h2 id="t-donnees">Lire les données</h2>
+      {% if refus %}<div class="message message--erreur mt-4"><svg class="icone"><use href="#i-erreur"/></svg><p>La base a refusé la lecture : {{ refus }}</p></div>{% endif %}
+      <p class="mt-4">Motif : {{ demande.motif }}</p>
+      <form method="post" class="mt-4">{% csrf_token %}<button class="btn btn--primaire btn--large" type="submit"><svg><use href="#i-oeil"/></svg> Lire maintenant (lecture journalisée)</button></form>
+    {% else %}
+      <div class="carte__tete" style="padding:var(--e-5) var(--e-6) 0"><h2 id="t-donnees">{{ lignes|length }} ligne{{ lignes|length|pluralize }}</h2><span class="petit">Lu le {% now "j/m/Y à H:i" %}</span></div>
+      <div class="tableau-conteneur" style="border:none">
+        <table class="tableau tableau--dense"><thead><tr><th>Membre</th><th>Mois</th><th>Produit</th><th class="num">Quantité</th></tr></thead>
+          <tbody>{% for l in lignes %}<tr><td>{{ l.membre }}</td><td>{{ l.mois|mois_court }}</td><td>{{ l.code }} · {{ l.libelle }}</td><td class="num chiffre">{{ l.quantite|nombre }}</td></tr>{% empty %}<tr><td colspan="4" class="vide">Aucune déclaration soumise sur ce périmètre.</td></tr>{% endfor %}</tbody></table>
+      </div>
+    {% endif %}
+  </section>
+  <aside class="carte"><h3>Accords</h3>
+    <ul class="chrono mt-4">{% for a in approbations %}<li class="{% if a.decision == 'APPROUVEE' %}chrono--fait{% else %}chrono--attention{% endif %}"><time>{{ a.decide_le|date_heure }}</time><strong>{{ a.poste.libelle }}</strong> · {{ a.decision|libelle_statut|lower }}</li>{% empty %}<li class="discret">Aucune décision pour l'instant.</li>{% endfor %}</ul>
+    <a class="btn btn--discret mt-4" href="{% url 'portail:gestion_demandes' %}">Retour aux demandes</a></aside>
+</div>
+{% endblock %}

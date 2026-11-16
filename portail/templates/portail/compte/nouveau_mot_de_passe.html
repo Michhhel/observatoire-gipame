@@ -1,0 +1,22 @@
+{% extends "portail/compte/_base_compte.html" %}
+{% block titre %}{% if activation %}Activation du compte{% else %}Nouveau mot de passe{% endif %}{% endblock %}
+{% block carte %}
+{% if validlink %}
+<h1>{% if activation %}Bienvenue{% else %}Nouveau mot de passe{% endif %}</h1>
+<p class="sous">{% if activation %}Votre compte est prêt : choisissez votre mot de passe pour l'activer.{% else %}Choisissez votre nouveau mot de passe.{% endif %}</p>
+<form method="post" novalidate>{% csrf_token %}
+  {% for champ in form %}
+  <div class="champ {% if champ.errors %}champ--erreur{% endif %}">
+    <label for="{{ champ.id_for_label }}">{{ champ.label }}</label>{{ champ }}
+    {% if champ.help_text %}<span class="champ__aide">{{ champ.help_text }}</span>{% endif %}
+    {% for e in champ.errors %}<span class="champ__erreur">{{ e }}</span>{% endfor %}
+  </div>
+  {% endfor %}
+  <button class="btn btn--primaire btn--large btn--bloc" type="submit">{% if activation %}Activer mon compte{% else %}Enregistrer{% endif %}</button>
+</form>
+{% else %}
+<h1>Lien expiré</h1>
+<p class="sous">Ce lien a déjà servi ou a dépassé 24 heures. Demandez-en un nouveau.</p>
+<a class="btn btn--primaire btn--bloc" href="{% url 'portail:mot_de_passe_oublie' %}">Recevoir un nouveau lien</a>
+{% endif %}
+{% endblock %}

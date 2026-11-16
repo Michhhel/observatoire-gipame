@@ -1,0 +1,14 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Catalogue{% endblock %}
+{% block contenu %}
+<div class="page__tete"><div><h1>Catalogue</h1><p>{{ nb|nombre }} produit{{ nb|pluralize }} actif{{ nb|pluralize }} ou archivé{{ nb|pluralize }}. Le classement dans la grille se gère par segmentation (§8 du document de passation).</p></div>
+  <form method="get" class="ligne"><label class="visuellement-cache" for="q">Rechercher</label><input class="entree" style="width:260px" type="search" id="q" name="q" value="{{ recherche }}" placeholder="Code, libellé, marque…"><button class="btn btn--secondaire" type="submit">Rechercher</button></form></div>
+<section class="carte" style="padding:0">
+  <div class="tableau-conteneur" style="border:none">
+    <table class="tableau tableau--dense">
+      <thead><tr><th>Code</th><th>Marque</th><th>Produit</th><th>Énergie</th><th>Statut</th></tr></thead>
+      <tbody>{% for p in produits %}<tr><td class="chiffre">{{ p.code }}</td><td>{{ p.modele.marque.nom }}</td><td><strong>{{ p.libelle_affiche }}</strong></td><td>{{ p.energie.libelle|default:"—" }}</td><td><span class="badge {{ p.statut|badge_statut }}">{{ p.statut|libelle_statut }}</span></td></tr>{% empty %}<tr><td colspan="5" class="vide">Aucun produit ne correspond.</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

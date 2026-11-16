@@ -1,0 +1,15 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Accès exceptionnel{% endblock %}
+{% block contenu %}
+<div class="page__tete"><div><h1>Accès exceptionnel aux données individuelles</h1><p>Réservé aux cas où un contrôle l'exige. Chaque demande doit être approuvée par le bureau (plusieurs postes), ouvre une fenêtre limitée, et chaque lecture est journalisée.</p></div></div>
+<div class="grille grille--principale">
+  <section class="carte" aria-labelledby="t-mes"><div class="carte__tete"><h2 id="t-mes">Mes demandes</h2></div>
+    {% if demandes %}<ul class="chrono">{% for d in demandes %}<li><time>{{ d.cree_le|date_heure }}</time><strong>{{ d.membre_cible.code|default:"Tous les membres" }}</strong> · {{ d.mois_debut|mois_court }}{% if d.mois_fin != d.mois_debut %} → {{ d.mois_fin|mois_court }}{% endif %} · {{ d.duree_minutes }} min<div class="petit">{{ d.motif }}</div><div class="petit">Accords : {{ d.approbations.count }} · <a href="{% url 'portail:gestion_lecture_acces' d.id %}">Ouvrir</a></div></li>{% endfor %}</ul>
+    {% else %}<p class="discret">Aucune demande.</p>{% endif %}</section>
+  <section class="carte carte--accent" aria-labelledby="t-nouvelle"><div class="carte__tete"><h3 id="t-nouvelle">Nouvelle demande</h3></div>
+    <form method="post" novalidate>{% csrf_token %}
+      {% for champ in formulaire %}<div class="champ {% if champ.errors %}champ--erreur{% endif %}"><label for="{{ champ.id_for_label }}">{{ champ.label }}</label>{{ champ }}{% for e in champ.errors %}<span class="champ__erreur">{{ e }}</span>{% endfor %}</div>{% endfor %}
+      <button class="btn btn--primaire btn--bloc" type="submit">Soumettre au bureau</button>
+    </form></section>
+</div>
+{% endblock %}

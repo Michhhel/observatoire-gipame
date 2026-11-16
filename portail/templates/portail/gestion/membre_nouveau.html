@@ -1,0 +1,20 @@
+{% extends "portail/base.html" %}
+{% block titre %}Nouveau membre{% endblock %}
+{% block classe_page %}page--etroite{% endblock %}
+{% block contenu %}
+<div class="page__tete"><div><h1>Ajouter un membre</h1><p>Une société qui rejoint l'Observatoire. Elle devra déclarer chaque mois à partir du mois indiqué ; son gabarit contiendra les produits des marques cochées.</p></div></div>
+<section class="carte">
+  <form method="post" novalidate>{% csrf_token %}
+    {% if formulaire.non_field_errors %}<div class="message message--erreur mb-4"><svg class="icone"><use href="#i-erreur"/></svg><p>{{ formulaire.non_field_errors.0 }}</p></div>{% endif %}
+    {% for champ in formulaire %}
+    <div class="champ {% if champ.errors %}champ--erreur{% endif %}"><label for="{{ champ.id_for_label }}">{{ champ.label }}</label>
+      {% if champ.name == "groupe" %}<input class="entree" type="text" name="groupe" id="id_groupe" maxlength="150" list="groupes" value="{{ champ.value|default:'' }}"><datalist id="groupes">{% for g in groupes %}<option value="{{ g }}">{% endfor %}</datalist>
+      {% elif champ.name == "marques" %}<div class="empile" style="max-height:16rem;overflow:auto;gap:var(--e-1)">{% for case in champ %}<label class="petit" style="display:flex;gap:var(--e-2);align-items:center">{{ case.tag }} {{ case.choice_label }}</label>{% empty %}<span class="discret petit">Aucune marque : créez-les depuis la fiche du membre après l'avoir enregistré.</span>{% endfor %}</div>
+      {% else %}{{ champ }}{% endif %}
+      {% if champ.help_text %}<span class="champ__aide">{{ champ.help_text }}</span>{% endif %}
+      {% for e in champ.errors %}<span class="champ__erreur">{{ e }}</span>{% endfor %}</div>
+    {% endfor %}
+    <div class="actions"><button class="btn btn--primaire" type="submit">Enregistrer le membre</button><a class="btn btn--discret" href="{% url 'portail:gestion_membres' %}">Annuler</a></div>
+  </form>
+</section>
+{% endblock %}

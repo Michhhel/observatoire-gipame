@@ -1,0 +1,12 @@
+Bonjour{% if prenom %} {{ prenom }}{% endif %},
+
+Un accès à l'Observatoire GIPAME vient d'être créé pour vous{% if societe %} au nom de {{ societe }}{% endif %}.
+Activez votre compte et choisissez votre mot de passe en suivant ce lien, valable 24 heures :
+
+{{ url_activation }}
+
+Votre identifiant est votre adresse e-mail : {{ email }}.
+Vos données de vente ne sont visibles que de votre société ; seuls des totaux de marché sont publiés,
+et uniquement lorsqu'ils ne permettent pas d'identifier un membre.
+
+— L'Observatoire GIPAME

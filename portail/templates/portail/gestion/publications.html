@@ -1,0 +1,33 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Publications{% endblock %}
+{% block contenu %}
+<div class="page__tete"><div><h1>Publications du marché</h1>
+<p>Calculez les totaux de marché d'un mois clos. Les règles de confidentialité sont appliquées automatiquement (une case est masquée quand elle permettrait de reconnaître un membre). Vous ne voyez ici que la couverture : les totaux se consultent dans « Le marché » côté membres et sur le tableau de bord du bureau.</p></div></div>
+
+<div class="message message--info mb-6"><p><strong>Provisoire ou définitive ?</strong> Calculez une publication <em>provisoire</em> dès les premières déclarations : les membres voient le marché tout de suite. Publiez en <em>définitif</em> quand au moins {{ seuil_couverture }} % des membres attendus ont déclaré. Une correction tardive ? Recalculez : une nouvelle version remplace la précédente, l'ancienne reste archivée.</p></div>
+
+<section class="carte" style="padding:0" aria-labelledby="t-mois">
+  <div class="carte__tete" style="padding:var(--e-5) var(--e-6) 0"><h2 id="t-mois">Douze derniers mois clos</h2></div>
+  <div class="tableau-conteneur" style="border:none">
+  <table class="tableau">
+    <thead><tr><th>Mois</th><th class="droite">Déclarations reçues</th><th>Dernière publication</th><th class="droite">Actions</th></tr></thead>
+    <tbody>
+    {% for l in lignes %}
+      <tr>
+        <td><strong>{{ l.mois|mois_titre }}</strong></td>
+        <td class="droite chiffre">{{ l.recus }} / {{ l.attendus }}</td>
+        <td>{% if l.publication %}<span class="badge badge--{{ l.publication.statut|lower }}">{{ l.publication.get_statut_display }}</span> <span class="petit discret">v{{ l.publication.version }} · {{ l.publication.calculee_le|date_heure }}</span>{% else %}<span class="discret">Pas encore publiée</span>{% endif %}</td>
+        <td class="droite">
+          <form method="post" class="ligne actions--fin" style="gap:var(--e-2);flex-wrap:wrap">{% csrf_token %}
+            <input type="hidden" name="mois" value="{{ l.mois|date:'Y-m' }}">
+            <button class="btn btn--secondaire btn--petit" type="submit" name="action" value="provisoire" {% if not l.recus %}disabled{% endif %}>Calculer (provisoire)</button>
+            <label class="petit" style="display:inline-flex;align-items:center;gap:var(--e-1);white-space:nowrap"><input type="checkbox" name="confirmation" value="oui"> je confirme</label>
+            <button class="btn btn--primaire btn--petit" type="submit" name="action" value="definitive" {% if not l.recus %}disabled{% endif %}>Publier en définitif</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</section>
+{% endblock %}

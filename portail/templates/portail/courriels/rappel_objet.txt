@@ -1,0 +1,1 @@
+{% if en_retard %}Déclaration {{ mois }} attendue{% else %}Rappel : déclaration {{ mois }} avant le {{ date_limite }}{% endif %} — Observatoire GIPAME

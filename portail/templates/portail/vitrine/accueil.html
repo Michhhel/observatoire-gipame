@@ -1,0 +1,159 @@
+{% load static %}<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F1F4F8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#050A24" media="(prefers-color-scheme: dark)">
+<meta name="description" content="L'observatoire du marché automobile ivoirien : chaque mois, les membres du GIPAME déclarent leurs ventes de véhicules neufs ; le Groupement publie le marché sans jamais exposer les chiffres d'une entreprise.">
+<title>Observatoire GIPAME · Le marché automobile ivoirien</title>
+<link rel="icon" href="{% static 'portail/img/icone.svg' %}" type="image/svg+xml">
+<link rel="preload" href="{% static 'portail/fonts/archivo-latin-wdth-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+<script>
+  /* Thème choisi avant le premier affichage : le choix mémorisé, sinon celui de l'appareil. */
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem("gipame-theme"); } catch (e) {}
+    if (t === "clair" || t === "sombre") document.documentElement.setAttribute("data-theme", t);
+  })();
+</script>
+<link rel="stylesheet" href="{% static 'portail/vitrine/vitrine.css' %}">
+</head>
+<body>
+<a class="evitement" href="#contenu">Aller au contenu</a>
+
+<header class="barre">
+  <a class="barre__marque" href="{% url 'portail:racine' %}" aria-label="Observatoire GIPAME, accueil">
+    <img class="logo logo--clair" src="{% static 'portail/img/logo-bloc.svg' %}" alt="Observatoire GIPAME" width="160" height="43">
+    <img class="logo logo--sombre" src="{% static 'portail/img/logo-bloc-inverse.svg' %}" alt="" width="160" height="43">
+  </a>
+  <nav class="barre__actions" aria-label="Actions">
+    <button class="theme" type="button" data-theme-bascule aria-label="Passer en mode sombre">
+      <svg class="theme__soleil" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
+      <svg class="theme__lune" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.6A8.2 8.2 0 0 1 9.4 4a8.2 8.2 0 1 0 10.6 10.6z"/></svg>
+    </button>
+    <a class="bouton bouton--discret" href="{% url 'portail:connexion' %}">Se connecter</a>
+  </nav>
+</header>
+
+<main id="contenu">
+
+  {# 1. Ouverture : des traînées de phares qui deviennent la courbe des ventes #}
+  <section class="ouverture" data-ouverture aria-labelledby="titre-ouverture">
+    <div class="ouverture__scene">
+      <canvas class="ouverture__toile" data-toile aria-hidden="true"></canvas>
+      <div class="ouverture__texte">
+        <h1 id="titre-ouverture">Le marché automobile ivoirien, mois après mois.</h1>
+        <p class="ouverture__intro">Chaque mois, les membres du GIPAME déclarent leurs ventes de véhicules neufs. L'observatoire en tire une image fiable du marché, sans jamais exposer les chiffres d'une entreprise.</p>
+        <div class="ouverture__actions">
+          <a class="bouton bouton--plein" href="{% url 'portail:connexion' %}">Accéder au portail</a>
+          <a class="bouton bouton--trait" href="#chiffres">Découvrir l'observatoire</a>
+        </div>
+      </div>
+      <div class="ouverture__legende" data-legende aria-hidden="true">
+        <p>Ventes mensuelles de véhicules neufs, {{ serie.debut }} – {{ serie.fin }}{% if illustratif %} <span>(valeurs d'illustration)</span>{% endif %}</p>
+      </div>
+      <p class="ouverture__indice" data-indice aria-hidden="true">Faites défiler</p>
+    </div>
+  </section>
+
+  {# 2. Les chiffres publics #}
+  <section class="chiffres" id="chiffres" aria-labelledby="titre-chiffres">
+    <div class="cadre">
+      <h2 id="titre-chiffres" class="titre-section">L'année 2025 en quelques chiffres</h2>
+      <dl class="chiffres__liste">
+        {% for c in chiffres %}
+        <div class="chiffre"><dt class="chiffre__libelle">{{ c.libelle }}</dt><dd class="chiffre__valeur">{{ c.valeur }}</dd></div>
+        {% endfor %}
+      </dl>
+      {% if illustratif %}<p class="note">Valeurs d'illustration, en attendant la première publication officielle de l'observatoire.</p>{% endif %}
+    </div>
+  </section>
+
+  {# 3. Les produits du groupement #}
+  <section class="segments" data-segments aria-labelledby="titre-segments">
+    <div class="segments__scene">
+      <div class="cadre segments__tete">
+        <h2 id="titre-segments" class="titre-section">Cinq familles de véhicules, suivies une à une</h2>
+        <p class="chapeau">Des citadines aux camions, chaque catégorie a sa propre courbe. Les membres la comparent à leurs ventes ; le Groupement la publie pour tous.</p>
+      </div>
+      <ol class="segments__piste" data-piste>
+        {% for s in segments %}
+        <li class="vehicule">
+          <figure class="vehicule__visuel{% if s.photo %} vehicule__visuel--photo{% endif %}">
+            {% if s.photo %}<img src="{% static s.photo %}" alt="{{ s.nom }}" loading="lazy" decoding="async">
+            {% else %}{% include "portail/vitrine/_silhouette.html" with cle=s.cle %}{% endif %}
+          </figure>
+          <div class="vehicule__texte">
+            <h3>{{ s.nom }}</h3>
+            <p>{{ s.texte }}</p>
+            <p class="vehicule__part"><span class="vehicule__jauge" style="--part: {{ s.part }}"></span><strong>{{ s.part }} %</strong> des ventes 2025</p>
+          </div>
+        </li>
+        {% endfor %}
+      </ol>
+      {% if illustratif %}<p class="cadre note segments__note">Parts de marché d'illustration.</p>{% endif %}
+    </div>
+  </section>
+
+  {# 4. Le cycle mensuel : une vraie séquence, d'où la numérotation #}
+  <section class="cycle" data-revele aria-labelledby="titre-cycle">
+    <div class="cadre">
+      <h2 id="titre-cycle" class="titre-section">Une déclaration par mois, en trois gestes</h2>
+      <ol class="cycle__etapes">
+        <li><span class="cycle__num">1</span><h3>Téléchargez votre fichier</h3><p>Un fichier Excel déjà rempli avec vos produits et, pour repère, vos ventes du mois précédent.</p></li>
+        <li><span class="cycle__num">2</span><h3>Déposez-le sur le portail</h3><p>Chaque ligne est vérifiée aussitôt. Vous recevez un rapport clair et corrigez si besoin.</p></li>
+        <li><span class="cycle__num">3</span><h3>Suivez le marché</h3><p>Le GIPAME publie les totaux du mois. Vous situez vos ventes par rapport à l'ensemble.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  {# 5. La confidentialité : des points qui se fondent en un total #}
+  <section class="secret" data-secret aria-labelledby="titre-secret">
+    <div class="cadre secret__grille">
+      <div class="secret__texte">
+        <h2 id="titre-secret" class="titre-section">Vos chiffres restent les vôtres.</h2>
+        <p>Chaque membre ne voit que ses propres ventes. Le Groupement ne publie que des totaux, et jamais un total qui permettrait de reconnaître une entreprise.</p>
+        <p class="petit"><a href="{% url 'portail:confidentialite' %}">Lire la charte de confidentialité</a></p>
+      </div>
+      <svg class="secret__schema" data-schema viewBox="0 0 420 300" role="img" aria-label="Les ventes de chaque membre, représentées par des points distincts, se fondent en un seul total publié.">
+        <g data-points></g>
+        <rect class="secret__barre" data-barre x="300" y="270" width="64" height="0" rx="6"/>
+        <text class="secret__etiquette" data-etiquette x="332" y="292" text-anchor="middle">Total publié</text>
+      </svg>
+    </div>
+  </section>
+
+  {# 6. Le groupement #}
+  <section class="groupement" data-revele aria-labelledby="titre-groupement">
+    <div class="cadre groupement__grille">
+      <img class="groupement__logo" src="{% static 'portail/img/logo-gipame.png' %}" alt="Logo du GIPAME" width="120" height="120" loading="lazy">
+      <div>
+        <h2 id="titre-groupement" class="titre-section">Un outil commun, porté par le GIPAME</h2>
+        <p>Le Groupement Interprofessionnel Automobiles, Matériels et Équipementiers réunit les distributeurs de véhicules neufs en Côte d'Ivoire. L'observatoire est l'outil qu'il s'est donné pour mesurer le marché, avec des règles de confidentialité connues de tous.</p>
+      </div>
+    </div>
+  </section>
+
+  {# 7. Final #}
+  <section class="final" aria-labelledby="titre-final">
+    <div class="cadre final__corps">
+      <h2 id="titre-final">Votre espace vous attend.</h2>
+      <p>Membres, équipe de gestion et bureau : connectez-vous avec l'adresse fournie par le GIPAME.</p>
+      <a class="bouton bouton--plein bouton--grand" href="{% url 'portail:connexion' %}">Accéder au portail</a>
+    </div>
+  </section>
+</main>
+
+<footer class="pied">
+  <div class="cadre pied__corps">
+    <p>© 2026 GIPAME, observatoire du marché automobile ivoirien</p>
+    <p><a href="{% url 'portail:confidentialite' %}">Charte de confidentialité</a><a href="{% url 'portail:aide' %}">Aide</a></p>
+  </div>
+</footer>
+
+{{ serie|json_script:"serie-mensuelle" }}
+<script src="{% static 'portail/vitrine/vitrine.js' %}" defer></script>
+</body>
+</html>

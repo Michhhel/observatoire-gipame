@@ -1,0 +1,84 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Déclarer {{ mois|mois_long }}{% endblock %}
+{% block contenu %}
+<div class="page__tete">
+  <div>
+    <h1>{% if situation.correction %}Corriger{% else %}Déclarer{% endif %} {{ mois|mois_long }}</h1>
+    <p>{% if situation.correction %}Une déclaration est déjà soumise (version {{ situation.soumise.version }}) : la nouvelle la remplacera, l'ancienne reste conservée.{% else %}{{ situation.delai }} · limite : {{ situation.date_limite|date_courte }}{% endif %}</p>
+  </div>
+  <form method="get" class="ligne" aria-label="Changer de mois">
+    <label class="petit" for="mois">Mois</label>
+    <select id="mois" name="mois" class="entree" style="width:auto;min-height:40px" onchange="this.form.submit()">
+      {% for m in mois_ouverts %}<option value="{{ m|date:'Y-m' }}" {% if m == mois %}selected{% endif %}>{{ m|mois_titre }}</option>{% endfor %}
+    </select>
+    <noscript><button class="btn btn--petit btn--secondaire" type="submit">Aller</button></noscript>
+  </form>
+</div>
+
+<ol class="etapes" aria-label="Les trois étapes">
+  <li class="etape {% if situation.brouillon %}etape--faite{% else %}etape--active{% endif %}"><strong>Télécharger</strong>Votre gabarit Excel, préparé pour vous : vos produits, le mois, rien d'autre à mettre en forme.</li>
+  <li class="etape"><strong>Remplir dans Excel</strong>Une quantité par ligne (0 si aucune vente). Pour un produit absent, l'onglet AJOUTS.</li>
+  <li class="etape {% if situation.brouillon %}etape--active{% endif %}"><strong>Déposer</strong>Le fichier est contrôlé en quelques secondes ; vous validez, c'est fini.</li>
+</ol>
+
+{% if situation.depot_brouillon %}
+<div class="message message--alerte mb-6"><svg class="icone"><use href="#i-info"/></svg>
+  <p>Un brouillon existe déjà pour {{ mois|mois_long }} (version {{ situation.brouillon.version }}). <a href="{% url 'portail:rapport' situation.depot_brouillon.id %}">Reprendre ce brouillon et le soumettre</a>, ou déposez un nouveau fichier ci-dessous : il le remplacera.</p>
+</div>
+{% endif %}
+
+<div class="grille grille--principale">
+  <div class="empile">
+    <section class="carte" aria-labelledby="t-etape1">
+      <div class="carte__tete"><h2 id="t-etape1">1 · Téléchargez votre gabarit</h2></div>
+      <p>Le fichier contient la liste de vos produits avec, pour vous aider, les quantités du mois précédent en mémoire. Les cellules grises ne se modifient pas ; vous remplissez la colonne <strong>Quantité</strong>.</p>
+      <a class="btn btn--primaire btn--large" href="{% url 'portail:gabarit' %}?mois={{ mois|date:'Y-m' }}"><svg><use href="#i-telecharger"/></svg> Télécharger le gabarit {{ mois|de_mois }}</a>
+      <p class="petit mt-4">Définition retenue : {{ params.definition_vente }}</p>
+    </section>
+
+    <section class="carte" aria-labelledby="t-etape3">
+      <div class="carte__tete"><h2 id="t-etape3">3 · Déposez le fichier rempli</h2></div>
+      <form method="post" enctype="multipart/form-data" novalidate>{% csrf_token %}
+        <input type="hidden" name="mois" value="{{ mois|date:'Y-m' }}">
+        {% if formulaire.motif %}
+        <div class="champ {% if formulaire.motif.errors %}champ--erreur{% endif %}">
+          <label for="{{ formulaire.motif.id_for_label }}">{{ formulaire.motif.label }}</label>{{ formulaire.motif }}
+          <span class="champ__aide">Conservé avec la nouvelle version ; l'ancienne reste consultable dans l'historique.</span>
+          {% for e in formulaire.motif.errors %}<span class="champ__erreur">{{ e }}</span>{% endfor %}
+        </div>
+        {% endif %}
+        {% if formulaire.fichier.errors %}<div class="message message--erreur mb-4"><svg class="icone"><use href="#i-erreur"/></svg><p>{{ formulaire.fichier.errors.0 }}</p></div>{% endif %}
+        <div class="dropzone" data-dropzone tabindex="0" role="button" aria-label="Choisir ou déposer le fichier Excel rempli">
+          <svg><use href="#i-deposer"/></svg>
+          <strong>Glissez votre fichier ici, ou cliquez pour le choisir</strong>
+          <span class="petit">Format Excel (.xlsx) · le gabarit rempli, tel quel</span>
+          <span class="dropzone__fichier" data-nom-fichier></span>
+          <input type="file" name="fichier" id="fichier" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
+        </div>
+        <div class="progression" data-progression hidden><div></div></div>
+        <div class="actions mt-4">
+          <button class="btn btn--primaire btn--large" type="submit" data-bouton-depot disabled>Vérifier mon fichier <svg><use href="#i-fleche"/></svg></button>
+          <span class="petit">Rien n'est soumis à cette étape : vous relirez le résultat du contrôle avant de valider.</span>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <aside class="empile">
+    <section class="carte carte--accent">
+      <h3>2 · Dans Excel</h3>
+      <ul class="petit mt-2" style="padding-left:1.2em;margin:0">
+        <li>Une ligne = un produit ; la quantité est le nombre de véhicules neufs <strong>facturés</strong> dans le mois.</li>
+        <li>0 pour un produit non vendu ; si vous n'avez rien vendu du tout, répondez OUI à « Aucune vente ce mois-ci ? ».</li>
+        <li>Un produit manque ? Onglet <strong>AJOUTS</strong> : le GIPAME le validera.</li>
+        <li>Ne renommez pas les onglets, n'ajoutez pas de ligne dans DECLARATION.</li>
+      </ul>
+    </section>
+    <section class="carte">
+      <h3>Confidentialité</h3>
+      <p class="petit mt-2">Votre fichier n'est lu que par le contrôle automatique. Vos quantités ne sont jamais montrées au personnel du GIPAME ni aux autres membres : elles ne servent qu'au calcul des totaux publiés, masqués dès qu'ils pourraient vous identifier.</p>
+      {% if params.contact_gipame and "renseigner" not in params.contact_gipame %}<p class="petit">Une question ? {{ params.contact_gipame }}</p>{% endif %}
+    </section>
+  </aside>
+</div>
+{% endblock %}

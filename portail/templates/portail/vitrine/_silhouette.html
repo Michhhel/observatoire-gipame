@@ -1,0 +1,25 @@
+<svg class="silhouette" viewBox="0 0 320 112" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+{% if cle == "citadine" %}
+  <path d="M18 88H62A18 18 0 0 1 98 88H226A18 18 0 0 1 262 88H298V76Q296 64 276 61L236 55Q214 36 192 34H140Q112 36 92 56L46 61Q24 64 20 74Z"/>
+  <path d="M102 55Q118 41 140 40H168V55Z"/><path d="M176 40H190Q208 42 222 55H176Z"/>
+  <circle cx="80" cy="88" r="14"/><circle cx="244" cy="88" r="14"/>
+{% elif cle == "suv" %}
+  <path d="M18 88H60A20 20 0 0 1 100 88H222A20 20 0 0 1 262 88H300V70Q300 60 290 58L254 54Q240 30 222 26H110Q96 26 84 40L70 54L34 58Q20 60 18 70Z"/>
+  <path d="M88 52L102 33H150V52Z"/><path d="M158 33H214Q226 36 236 52H158Z"/>
+  <circle cx="80" cy="88" r="16"/><circle cx="242" cy="88" r="16"/>
+{% elif cle == "pickup" %}
+  <path d="M16 88H58A20 20 0 0 1 98 88H220A20 20 0 0 1 260 88H302V60H180V34Q178 26 168 26H112Q100 26 92 38L80 54L36 58Q18 60 16 70Z"/>
+  <path d="M96 52L108 33H166V52Z"/><path d="M180 60V84"/>
+  <circle cx="78" cy="88" r="16"/><circle cx="240" cy="88" r="16"/>
+{% elif cle == "utilitaire" %}
+  <path d="M16 88H58A20 20 0 0 1 98 88H226A20 20 0 0 1 266 88H302V30Q302 20 292 20H96Q84 20 74 32L52 56L28 60Q16 62 16 72Z"/>
+  <path d="M76 54L95 30H128V54Z"/><path d="M146 24V84"/><path d="M152 30H210V54H152Z"/>
+  <circle cx="78" cy="88" r="16"/><circle cx="246" cy="88" r="16"/>
+{% else %}
+  <path d="M16 88H52A20 20 0 0 1 92 88H108V24Q108 16 98 16H60Q48 16 42 28L30 52Q18 56 16 66Z"/>
+  <path d="M44 48L54 28H96V48Z"/>
+  <path d="M116 12H304V80H116Z"/><path d="M108 88H210A20 20 0 0 1 250 88A20 20 0 0 1 290 88H304"/>
+  <circle cx="72" cy="88" r="16"/><circle cx="230" cy="88" r="16"/><circle cx="270" cy="88" r="16"/>
+{% endif %}
+  <path class="silhouette__sol" d="M4 106H316" stroke-width="1"/>
+</svg>

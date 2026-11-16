@@ -1,0 +1,27 @@
+{% extends "portail/base.html" %}
+{% block titre %}Aide{% endblock %}
+{% block classe_page %}page--etroite{% endblock %}
+{% block contenu %}
+<div class="page__tete"><div><h1>Aide</h1><p>Les réponses aux questions les plus fréquentes. Une autre question ? Écrivez au secrétariat du GIPAME{% if p.contact_gipame and "renseigner" not in p.contact_gipame %} ({{ p.contact_gipame }}){% endif %}.</p></div></div>
+
+<section class="carte mb-6" aria-labelledby="a1"><h2 id="a1">Déclarer mes ventes du mois, en 3 étapes</h2>
+<ol>
+  <li><strong>Télécharger</strong> : depuis « Déclarer », téléchargez le fichier Excel du mois. Il contient déjà la liste de vos produits.</li>
+  <li><strong>Remplir</strong> : saisissez le nombre de véhicules neufs vendus pour chaque produit (0 si aucune vente). Ne modifiez ni les cellules grises, ni les lignes, ni les onglets.</li>
+  <li><strong>Déposer</strong> : glissez le fichier dans la zone de dépôt. Un rapport s'affiche immédiatement ; s'il est vert, cochez l'attestation et cliquez sur « Soumettre ».</li>
+</ol>
+<p>Date limite : {{ p.jours_grace_depot }} jours après la fin du mois. Un rappel est envoyé par e-mail quelques jours avant.</p></section>
+
+<section class="carte mb-6" aria-labelledby="a2"><h2 id="a2">Questions fréquentes</h2>
+<details><summary><strong>Le rapport affiche une erreur (en rouge)</strong></summary><p>Chaque erreur indique quoi corriger et où (onglet, ligne). Corrigez votre fichier et déposez-le à nouveau : vous pouvez déposer autant de fois que nécessaire, rien n'est enregistré tant que vous n'avez pas soumis.</p></details>
+<details><summary><strong>Le rapport affiche une alerte (en orange)</strong></summary><p>Une alerte n'empêche pas de soumettre : elle signale un chiffre inhabituel (forte variation, quantités identiques au mois précédent…). Vérifiez, puis ajoutez si besoin un mot d'explication dans le champ prévu : il aide le GIPAME à interpréter le marché.</p></details>
+<details><summary><strong>Je n'ai rien vendu ce mois-ci</strong></summary><p>Laissez toutes les quantités à 0 et répondez OUI à « Aucune vente ce mois-ci ? » en haut de l'onglet DECLARATION, puis déposez et soumettez. Une déclaration à zéro est une information utile.</p></details>
+<details><summary><strong>Je me suis trompé après avoir soumis</strong></summary><p>Retéléchargez le fichier du mois (il est pré-rempli avec vos derniers chiffres), corrigez, déposez et indiquez en une phrase le motif de la correction. L'ancienne version est conservée ; les totaux publiés seront recalculés.</p></details>
+<details><summary><strong>Un produit que je vends n'est pas dans mon fichier</strong></summary><p>Ajoutez-le dans l'onglet AJOUTS du fichier, ou proposez-le depuis « Mes produits ». Le GIPAME le vérifie et l'ajoute au catalogue ; il apparaîtra dans votre fichier du mois suivant.</p></details>
+<details><summary><strong>Un produit de mon fichier ne se vend plus</strong></summary><p>Laissez sa quantité à 0, ou masquez-le depuis « Mes produits » : il disparaîtra de vos prochains fichiers (vous pourrez le réafficher).</p></details>
+<details><summary><strong>Le fichier est refusé : « fichier modifié ou non reconnu »</strong></summary><p>Le fichier doit venir du portail et de votre session. Repartez du fichier téléchargé à l'étape 1, sans copier ses cellules dans un autre classeur.</p></details>
+<details><summary><strong>J'ai oublié mon mot de passe / mon compte est bloqué</strong></summary><p>Utilisez « Mot de passe oublié » sur la page de connexion : un lien valable 24 heures vous est envoyé. Après 5 essais erronés, le compte est bloqué 15 minutes, puis se débloque tout seul.</p></details>
+<details><summary><strong>Qui voit mes chiffres ?</strong></summary><p>Personne d'autre que votre société. Le marché n'est publié qu'en totaux qui ne permettent pas de reconnaître un membre. Détails dans la <a href="{% url 'portail:confidentialite' %}">charte de confidentialité</a>.</p></details>
+<details><summary><strong>Que compte-t-on comme une « vente » ?</strong></summary><p>{{ p.definition_vente }}</p></details>
+</section>
+{% endblock %}

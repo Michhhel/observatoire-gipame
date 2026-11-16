@@ -1,0 +1,19 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Approbations{% endblock %}
+{% block contenu %}
+<div class="page__tete"><div><h1>Demandes d'accès exceptionnel</h1><p>{% if poste %}Vous vous prononcez au nom du poste <strong>{{ poste.libelle }}</strong>.{% else %}Aucun poste du bureau n'est rattaché à votre compte : vous pouvez consulter, pas approuver.{% endif %} Un accès s'ouvre quand le nombre de postes requis a approuvé ; chaque lecture est ensuite journalisée.</p></div></div>
+<section class="carte" style="padding:0">
+  <div class="tableau-conteneur" style="border:none">
+    <table class="tableau">
+      <thead><tr><th>Demandée le</th><th>Par</th><th>Périmètre</th><th>Motif</th><th>Accords</th><th></th></tr></thead>
+      <tbody>{% for x in liste %}<tr>
+        <td>{{ x.demande.cree_le|date_heure }}</td><td>{{ x.demande.profil_demandeur.nom_affiche|default:'—' }}</td>
+        <td>{{ x.demande.membre_cible.code|default:"Tous les membres" }} · {{ x.demande.mois_debut|mois_court }}{% if x.demande.mois_fin != x.demande.mois_debut %} → {{ x.demande.mois_fin|mois_court }}{% endif %}</td>
+        <td class="petit">{{ x.demande.motif }}</td>
+        <td><span class="badge {% if x.refus %}badge--rejete{% elif x.nb_accords %}badge--soumise{% else %}badge--attente{% endif %}">{{ x.nb_accords }} accord{{ x.nb_accords|pluralize }}{% if x.refus %} · refus{% endif %}</span></td>
+        <td class="droite">{% if x.deja %}<span class="petit">Vous : {{ x.deja.decision|libelle_statut|lower }}</span>{% elif poste %}<a class="btn btn--petit btn--primaire" href="{% url 'portail:bureau_approbation' x.demande.id %}">Examiner</a>{% endif %}</td>
+      </tr>{% empty %}<tr><td colspan="6" class="vide">Aucune demande.</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

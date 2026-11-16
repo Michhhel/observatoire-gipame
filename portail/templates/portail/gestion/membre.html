@@ -1,0 +1,54 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}{{ m.code }} · Membre{% endblock %}
+{% block contenu %}
+<div class="page__tete"><div><span class="kpi__libelle">Membre · {{ m.code }}</span><h1>{{ m.raison_sociale }}</h1><p>{% if m.groupe %}Groupe économique : {{ m.groupe.nom }} · {% endif %}aucune donnée de vente sur cette page.</p></div>
+  <a class="btn btn--discret" href="{% url 'portail:gestion_membres' %}">← Tous les membres</a></div>
+
+<div class="grille grille--2 mb-6">
+  <section class="carte" aria-labelledby="t-fiche"><div class="carte__tete"><h2 id="t-fiche">Fiche</h2></div>
+    <form method="post" action="{% url 'portail:gestion_membre_action' m.id %}">{% csrf_token %}
+      <div class="champ"><label>Code (définitif)</label><input class="entree" value="{{ m.code }}" disabled></div>
+      <div class="champ"><label for="rs">Raison sociale</label><input class="entree" id="rs" name="raison_sociale" value="{{ m.raison_sociale }}" maxlength="200" required></div>
+      <div class="champ"><label for="gr">Groupe économique</label><input class="entree" id="gr" name="groupe" value="{{ m.groupe.nom|default:'' }}" list="groupes" maxlength="150"><datalist id="groupes">{% for g in groupes %}<option value="{{ g }}">{% endfor %}</datalist>
+        <span class="champ__aide">Les sociétés d'un même groupe comptent pour un seul contributeur. Laisser vide si indépendant.</span></div>
+      <button class="btn btn--primaire" name="action" value="modifier" type="submit">Enregistrer</button>
+    </form></section>
+
+  <section class="carte" aria-labelledby="t-adh"><div class="carte__tete"><h2 id="t-adh">Adhésion (obligation de déclarer)</h2></div>
+    <ul class="chrono">{% for p in periodes %}<li><strong>{{ p.date_debut|mois_long }} → {% if p.date_fin %}{{ p.date_fin|mois_long }}{% else %}en cours{% endif %}</strong>
+      {% if not p.date_fin %}<form method="post" action="{% url 'portail:gestion_membre_action' m.id %}" class="ligne mt-2" style="gap:var(--e-2);flex-wrap:wrap">{% csrf_token %}<input type="hidden" name="periode" value="{{ p.id }}">
+        <label class="petit" for="f{{ p.id }}">Dernier mois à déclarer</label><input class="entree" style="width:auto" type="month" id="f{{ p.id }}" name="mois" required>
+        <button class="btn btn--secondaire btn--petit" name="action" value="clore_adhesion" type="submit">Clore</button></form>{% endif %}</li>
+    {% empty %}<li class="discret">Aucune période.</li>{% endfor %}</ul>
+    {% if not periodes or periodes.0.date_fin %}
+    <form method="post" action="{% url 'portail:gestion_membre_action' m.id %}" class="ligne mt-4" style="gap:var(--e-2);flex-wrap:wrap">{% csrf_token %}
+      <label class="petit" for="nouv">Reprend à partir de</label><input class="entree" style="width:auto" type="month" id="nouv" name="mois" value="{{ mois_courant }}" required>
+      <button class="btn btn--primaire btn--petit" name="action" value="ouvrir_adhesion" type="submit">Ouvrir une période</button></form>{% endif %}
+  </section>
+</div>
+
+<div class="grille grille--principale">
+  <section class="carte" aria-labelledby="t-marques"><div class="carte__tete"><h2 id="t-marques">Marques distribuées</h2></div>
+    <div class="tableau-conteneur"><table class="tableau tableau--dense">
+      <thead><tr><th>Marque</th><th>Depuis</th><th>Jusqu'à</th><th></th></tr></thead>
+      <tbody>{% for c in concessions %}<tr><td><strong>{{ c.marque.nom }}</strong> <span class="petit discret">{{ c.marque.origine.libelle }}</span></td><td>{{ c.date_debut|mois_court }}</td><td>{% if c.date_fin %}{{ c.date_fin|mois_court }}{% else %}—{% endif %}</td>
+        <td class="droite">{% if not c.date_fin %}<form method="post" action="{% url 'portail:gestion_membre_action' m.id %}" class="ligne actions--fin" style="gap:var(--e-2)">{% csrf_token %}<input type="hidden" name="concession" value="{{ c.id }}"><label class="visuellement-cache" for="c{{ c.id }}">Dernier mois</label><input class="entree" style="width:auto" type="month" id="c{{ c.id }}" name="mois" required><button class="btn btn--discret btn--petit" name="action" value="clore_concession" type="submit">Retirer</button></form>{% endif %}</td></tr>
+      {% empty %}<tr><td colspan="4" class="vide">Aucune marque.</td></tr>{% endfor %}</tbody></table></div>
+    <form method="post" action="{% url 'portail:gestion_membre_action' m.id %}" class="ligne mt-4" style="gap:var(--e-2);flex-wrap:wrap">{% csrf_token %}
+      <label class="visuellement-cache" for="mq">Marque</label><select class="entree" style="width:auto" id="mq" name="marque" required>{% for mq in marques %}<option value="{{ mq.id }}">{{ mq.nom }}</option>{% endfor %}</select>
+      <label class="petit" for="mqd">à partir de</label><input class="entree" style="width:auto" type="month" id="mqd" name="mois" value="{{ mois_courant }}" required>
+      <button class="btn btn--primaire btn--petit" name="action" value="ajouter_concession" type="submit">Ajouter la marque</button></form>
+  </section>
+
+  <aside class="empile">
+    <section class="carte"><h3>Nouvelle marque au catalogue</h3><p class="petit mt-2">Seulement si elle n'existe pas encore dans la liste.</p>
+      <form method="post" action="{% url 'portail:gestion_membre_action' m.id %}" class="mt-4">{% csrf_token %}
+        {% for champ in formulaire_marque %}<div class="champ"><label for="{{ champ.id_for_label }}">{{ champ.label }}</label>{{ champ }}</div>{% endfor %}
+        <button class="btn btn--secondaire" name="action" value="creer_marque" type="submit">Créer la marque</button></form></section>
+    <section class="carte"><h3>Comptes de déclarants</h3>
+      {% if comptes %}<ul class="petit mt-2">{% for c in comptes %}<li>{{ c.email }}{% if not c.is_active %} <span class="discret">(désactivé)</span>{% elif not c.compte_active %} <span class="discret">(en attente d'activation)</span>{% endif %}</li>{% endfor %}</ul>
+      {% else %}<p class="petit mt-2">Aucun compte : ce membre ne peut pas encore déclarer.</p>{% endif %}
+      {% if user.role_metier == "TECHNIQUE" %}<a class="btn btn--discret btn--petit mt-2" href="{% url 'portail:admin_comptes' %}">Gérer les comptes</a>{% else %}<p class="petit discret">Les comptes sont créés par l'administrateur de l'Observatoire.</p>{% endif %}</section>
+  </aside>
+</div>
+{% endblock %}

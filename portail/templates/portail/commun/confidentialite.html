@@ -1,0 +1,45 @@
+{% extends "portail/base.html" %}
+{% block titre %}Charte de confidentialité{% endblock %}
+{% block classe_page %}page--etroite{% endblock %}
+{% block contenu %}
+<div class="page__tete"><div><h1>Charte de confidentialité</h1>
+<p>Les membres du GIPAME sont concurrents. L'Observatoire est construit pour qu'aucun d'eux ne puisse connaître les ventes d'un autre. Voici, en clair, ce qui est collecté, qui voit quoi, et comment c'est garanti.</p></div></div>
+
+<section class="carte mb-6" aria-labelledby="c1"><h2 id="c1">Ce qui est collecté</h2>
+<ul>
+  <li>Chaque mois, pour chaque société membre : le <strong>nombre de véhicules neufs vendus</strong> par produit (marque, modèle, version). Aucun prix, aucun client, aucune donnée de facture.</li>
+  <li>Pour chaque compte : nom, prénom, adresse e-mail professionnelle, société ou poste de rattachement.</li>
+  <li>Pour la sécurité : la date des connexions et des tentatives échouées (avec l'adresse IP), la trace de chaque fichier déposé (date, résultat des contrôles) et de chaque version d'une déclaration.</li>
+</ul></section>
+
+<section class="carte mb-6" aria-labelledby="c2"><h2 id="c2">Qui voit quoi</h2>
+<div class="tableau-conteneur"><table class="tableau">
+  <thead><tr><th>Qui</th><th>Ce qu'il voit</th><th>Ce qu'il ne voit jamais</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Votre société</strong></td><td>Ses propres déclarations, son historique, « Mon année », et les totaux de marché publiés.</td><td>Les chiffres d'une autre société.</td></tr>
+    <tr><td><strong>Le secrétariat du GIPAME</strong></td><td>Qui a déclaré et quand (statuts et dates), le catalogue des produits.</td><td>Aucune quantité déclarée par une société.</td></tr>
+    <tr><td><strong>Le bureau du GIPAME</strong></td><td>Les totaux de marché publiés, le journal des accès.</td><td>Les chiffres d'une société, ni le détail du calcul de confidentialité.</td></tr>
+    <tr><td><strong>Les autres membres</strong></td><td>Les mêmes totaux de marché publiés que vous.</td><td>Vos chiffres, ni même le fait que vous ayez vendu tel produit.</td></tr>
+  </tbody></table></div>
+</section>
+
+<section class="carte mb-6" aria-labelledby="c3"><h2 id="c3">Comment les totaux publiés protègent chaque membre</h2>
+<p>Un total n'est publié que s'il regroupe <strong>plusieurs sociétés indépendantes</strong> (les sociétés d'un même groupe comptent pour une seule) et qu'<strong>aucune d'elles n'y pèse de façon dominante</strong>. Sinon la case est masquée et affiche « c » (confidentiel) ; une autre case peut aussi être masquée pour qu'on ne puisse pas retrouver la première par soustraction. Ces règles sont appliquées automatiquement par le calcul, sans intervention humaine.</p>
+</section>
+
+<section class="carte mb-6" aria-labelledby="c4"><h2 id="c4">Accès exceptionnel aux chiffres d'une société</h2>
+<p>Dans un cas grave (contrôle d'une incohérence, litige), le secrétariat peut demander à lire des chiffres individuels. Cet accès exige <strong>l'accord de plusieurs membres du bureau</strong>, est limité à une période et à une durée de quelques heures, et <strong>chaque lecture est enregistrée</strong> dans un journal que personne ne peut modifier ni effacer et que le bureau consulte chaque mois.</p>
+</section>
+
+<section class="carte mb-6" aria-labelledby="c5"><h2 id="c5">Comment c'est garanti techniquement</h2>
+<ul>
+  <li>Les règles d'accès sont inscrites <strong>dans la base de données elle-même</strong> (pas seulement dans les écrans) : même une erreur de programmation ne permettrait pas à un compte de lire les chiffres d'une autre société.</li>
+  <li>Aucune donnée n'est jamais supprimée ni réécrite : une correction crée une nouvelle version, l'ancienne est conservée.</li>
+  <li>Connexion chiffrée (HTTPS), mots de passe stockés sous forme irréversible, compte bloqué 15 minutes après 5 essais erronés, déconnexion après 8 heures d'inactivité.</li>
+  <li>Les données sont hébergées {{ hebergement }}, et sauvegardées régulièrement.</li>
+</ul></section>
+
+<section class="carte" aria-labelledby="c6"><h2 id="c6">Vos droits</h2>
+<p>Vous pouvez demander à consulter ou rectifier les informations de votre compte, ou sa désactivation, auprès du secrétariat du GIPAME{% if p.contact_gipame and "renseigner" not in p.contact_gipame %} : {{ p.contact_gipame }}{% endif %}. Les déclarations de ventes de votre société sont conservées pour constituer les séries historiques du marché ; elles ne sont jamais publiées autrement qu'en totaux protégés.</p>
+</section>
+{% endblock %}

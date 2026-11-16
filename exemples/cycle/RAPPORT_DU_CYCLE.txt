@@ -1,0 +1,20 @@
+== Mois 2026-11 : chaque membre télécharge son gabarit, le remplit et le dépose ==
+-- A1 dépose un fichier avec erreurs :
+Résultat : REJETE | déclaration - (version 1, non enregistrée) | 0 lignes, 0 unités, 0 ajout(s)
+ERREUR QUANTITE [DECLARATION!8] : La quantité doit être un nombre entier (pas de décimale).
+ERREUR QUANTITE [DECLARATION!9] : La quantité ne peut pas être négative.
+-- A1 : ACCEPTE_AVEC_ALERTES, déclaration SOUMISE, 110 unités
+     ALERTE IDENTIQUE : Toutes les quantités sont identiques à celles du mois précédent : vérifiez qu'il ne s'agit pas d'une copie.
+-- A2 : ACCEPTE_AVEC_ALERTES, déclaration SOUMISE, 88 unités
+     ALERTE IDENTIQUE : Toutes les quantités sont identiques à celles du mois précédent : vérifiez qu'il ne s'agit pas d'une copie.
+-- A3 : ACCEPTE_AVEC_ALERTES, déclaration SOUMISE, 76 unités
+     ALERTE IDENTIQUE : Toutes les quantités sont identiques à celles du mois précédent : vérifiez qu'il ne s'agit pas d'une copie.
+-- B1 : ACCEPTE_AVEC_ALERTES, déclaration SOUMISE, 171 unités
+     ALERTE IDENTIQUE : Toutes les quantités sont identiques à celles du mois précédent : vérifiez qu'il ne s'agit pas d'une copie.
+-- B2 : ACCEPTE_AVEC_ALERTES, déclaration SOUMISE, 54 unités
+     ALERTE IDENTIQUE : Toutes les quantités sont identiques à celles du mois précédent : vérifiez qu'il ne s'agit pas d'une copie.
+-- B3 : ACCEPTE, déclaration SOUMISE, 52 unités
+== Calcul de la publication (rôle gipame_calcul) ==
+-- publication v1 : couverture 100.00 %, 20 cellules dont 14 masquées
+== Exports Excel, chacun avec le rôle de son destinataire ==
+== 22 fichiers écrits dans /home/claude/exemples/cycle/ ==

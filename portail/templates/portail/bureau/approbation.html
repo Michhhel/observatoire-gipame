@@ -1,0 +1,27 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Demande d'accès{% endblock %}
+{% block classe_page %}page--etroite{% endblock %}
+{% block contenu %}
+<div class="page__tete"><div><span class="kpi__libelle">Demande du {{ demande.cree_le|date_heure }}</span><h1>Accès exceptionnel · {{ demande.membre_cible.code|default:"tous les membres" }}</h1></div></div>
+<section class="carte">
+  <table class="tableau tableau--dense"><tbody>
+    <tr><td>Demandeur</td><td><strong>{{ demande.profil_demandeur.nom_affiche|default:'—' }}</strong></td></tr>
+    <tr><td>Période</td><td>{{ demande.mois_debut|mois_long }}{% if demande.mois_fin != demande.mois_debut %} → {{ demande.mois_fin|mois_long }}{% endif %}</td></tr>
+    <tr><td>Fenêtre</td><td>{{ demande.duree_minutes }} minutes à partir du dernier accord requis</td></tr>
+    <tr><td>Motif</td><td>{{ demande.motif }}</td></tr>
+  </tbody></table>
+  <h3 class="mt-6">Décisions déjà prises</h3>
+  <ul class="chrono mt-2">{% for a in approbations %}<li class="{% if a.decision == 'APPROUVEE' %}chrono--fait{% else %}chrono--attention{% endif %}"><time>{{ a.decide_le|date_heure }}</time><strong>{{ a.poste.libelle }}</strong> · {{ a.decision|libelle_statut|lower }}{% if a.commentaire %}<div class="petit">{{ a.commentaire }}</div>{% endif %}</li>{% empty %}<li class="discret">Aucune pour l'instant.</li>{% endfor %}</ul>
+</section>
+{% if poste and not deja %}
+<section class="carte carte--accent mt-4">
+  <h2>Votre décision au nom du poste {{ poste.libelle }}</h2>
+  <form method="post" class="mt-4" novalidate>{% csrf_token %}
+    {% for r in formulaire.decision %}<label class="case" style="margin-bottom:var(--e-2)">{{ r.tag }}<span><strong>{{ r.choice_label }}</strong></span></label>{% endfor %}
+    <div class="champ mt-4"><label for="{{ formulaire.commentaire.id_for_label }}">{{ formulaire.commentaire.label }}</label>{{ formulaire.commentaire }}</div>
+    <div class="actions"><button class="btn btn--primaire btn--large" type="submit">Enregistrer</button><a class="btn btn--discret" href="{% url 'portail:bureau_approbations' %}">Retour</a></div>
+  </form>
+</section>
+{% elif deja %}<div class="message message--info mt-4"><svg class="icone"><use href="#i-info"/></svg><p>Votre poste s'est déjà prononcé : {{ deja.decision|libelle_statut|lower }}, le {{ deja.decide_le|date_heure }}.</p></div>
+{% endif %}
+{% endblock %}

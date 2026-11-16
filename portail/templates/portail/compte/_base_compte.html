@@ -1,0 +1,79 @@
+{% extends "portail/base.html" %}{% load static %}
+{% block classe_page %}page--compte{% endblock %}
+{% block tete %}<style>
+  /* Pages de compte (connexion, mot de passe) : panneau de marque à gauche, formulaire à droite. */
+  .entete, .pied { display: none; }
+  .page.page--compte { max-width: none; padding: 0; margin: 0; }
+  .accueil { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr); }
+
+  .vitrine { position: relative; overflow: hidden; color: #fff; padding: 56px 64px 44px; display: flex; flex-direction: column;
+    background:
+      radial-gradient(900px 520px at 88% 112%, rgba(36,106,144,.55), transparent 62%),
+      radial-gradient(640px 420px at -10% -10%, rgba(36,106,144,.28), transparent 60%),
+      linear-gradient(160deg, #0B1238 0%, #0E1A4A 55%, #0B1238 100%); }
+  .vitrine__logo { height: 52px; width: 195px; display: block; align-self: flex-start; }
+  .vitrine__corps { margin: auto 0; max-width: 520px; position: relative; z-index: 1; }
+  .vitrine__surtitre { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: #8EC3E0; font-weight: 600; margin: 0 0 18px; }
+  .vitrine h1 { color: #fff; font-size: clamp(30px, 3.1vw, 42px); line-height: 1.15; letter-spacing: -.01em; margin: 0 0 18px; }
+  .vitrine h1 span { color: #8EC3E0; }
+  .vitrine__intro { color: rgba(255,255,255,.78); font-size: 16px; line-height: 1.6; margin: 0 0 34px; }
+  .atouts { list-style: none; padding: 0; margin: 0; display: grid; gap: 16px; }
+  .atouts li { display: grid; grid-template-columns: 40px 1fr; gap: 14px; align-items: start; color: rgba(255,255,255,.9); font-size: 15px; line-height: 1.5; }
+  .atouts strong { color: #fff; display: block; font-weight: 600; }
+  .atouts .pastille { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); }
+  .atouts svg { width: 20px; height: 20px; color: #8EC3E0; }
+  .vitrine__pied { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,.62); font-size: 13px; position: relative; z-index: 1; }
+  .vitrine__pied img { height: 36px; width: 36px; border-radius: 8px; background: #fff; padding: 2px; }
+  .vitrine__decor { position: absolute; right: -120px; bottom: -150px; width: 560px; height: 560px; opacity: .16; pointer-events: none; }
+
+  .formulaire { display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 48px 40px; background: var(--fond); }
+  .connexion { width: 100%; max-width: 420px; }
+  .connexion .carte { padding: 40px; box-shadow: 0 1px 2px rgba(11,18,56,.04), 0 18px 48px -18px rgba(11,18,56,.18); border-radius: 18px; }
+  .connexion h1 { font-size: var(--t-22); margin-bottom: var(--e-2); }
+  .connexion .sous { color: var(--texte-2); margin-bottom: var(--e-6); }
+  .connexion .liens { display: flex; justify-content: space-between; gap: var(--e-3); margin-top: var(--e-4); font-size: var(--t-14); }
+  .connexion__bas { margin-top: var(--e-6); text-align: center; }
+  .connexion__logo-mobile { display: none; }
+
+  @media (max-width: 900px) {
+    .accueil { grid-template-columns: 1fr; }
+    .vitrine { padding: 32px 24px 28px; }
+    .vitrine__corps { margin: 28px 0 8px; }
+    .vitrine h1 { font-size: 26px; }
+    .vitrine__intro, .atouts, .vitrine__decor, .vitrine__pied { display: none; }
+    .formulaire { padding: 28px 16px 40px; justify-content: flex-start; }
+    .connexion .carte { padding: var(--e-5); }
+  }
+</style>{% endblock %}
+{% block contenu %}
+<div class="accueil">
+  <section class="vitrine" aria-label="Observatoire GIPAME">
+    <img class="vitrine__logo" src="{% static 'portail/img/logo-bloc-inverse.svg' %}" alt="Observatoire GIPAME">
+    <div class="vitrine__corps">
+      <p class="vitrine__surtitre">Le marché automobile ivoirien</p>
+      <h1>Des chiffres fiables,<br><span>une confidentialité totale.</span></h1>
+      <p class="vitrine__intro">Chaque mois, les membres du GIPAME déclarent leurs ventes de véhicules neufs en quelques minutes. Le Groupement publie le marché ; personne ne voit les chiffres d'un autre.</p>
+      <ul class="atouts">
+        <li><span class="pastille"><svg><use href="#i-cadenas"/></svg></span><span><strong>Vos ventes restent les vôtres</strong>Seule votre société y a accès. Les totaux publiés ne permettent de reconnaître aucun membre.</span></li>
+        <li><span class="pastille"><svg><use href="#i-ok"/></svg></span><span><strong>Une déclaration en trois étapes</strong>Téléchargez votre fichier, remplissez-le, déposez-le : il est contrôlé aussitôt.</span></li>
+        <li><span class="pastille"><svg><use href="#i-oeil"/></svg></span><span><strong>Le marché, mois après mois</strong>Suivez vos ventes et l'évolution du marché sur une seule plateforme.</span></li>
+      </ul>
+    </div>
+    <div class="vitrine__pied"><img src="{% static 'portail/img/logo-gipame.png' %}" alt="">Un service du Groupement Interprofessionnel Automobiles, Matériels et Équipementiers</div>
+    <svg class="vitrine__decor" viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M13.2 44.4 A 20 20 0 1 1 50.8 44.4" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+      <path d="M8.5 48.5 A 26 26 0 1 1 55.5 48.5" fill="none" stroke="#fff" stroke-width=".6" stroke-linecap="round" stroke-dasharray="1 2.2"/>
+      <path d="M32 38 L 41 23" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><circle cx="32" cy="38" r="3" fill="#fff"/>
+    </svg>
+  </section>
+  <section class="formulaire">
+    <div class="connexion">
+      <div class="carte">{% block carte %}{% endblock %}</div>
+      <div class="connexion__bas">
+        <p class="mb-2"><span class="confiance"><svg><use href="#i-cadenas"/></svg> Connexion chiffrée · vos ventes ne sont visibles que de votre société</span></p>
+        <p class="petit"><a href="{% url 'portail:racine' %}">Découvrir l'observatoire</a> · <a href="{% url 'portail:confidentialite' %}">Charte de confidentialité</a> · <a href="{% url 'portail:aide' %}">Aide</a></p>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

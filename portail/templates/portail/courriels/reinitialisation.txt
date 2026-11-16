@@ -1,0 +1,11 @@
+Bonjour,
+
+Vous avez demandé un nouveau mot de passe pour l'Observatoire GIPAME (compte : {{ email }}).
+Choisissez-le en suivant ce lien, valable 24 heures et utilisable une seule fois :
+
+{{ protocol }}://{{ domain }}{% url 'portail:nouveau_mot_de_passe' uidb64=uid token=token %}
+
+Si vous n'êtes pas à l'origine de cette demande, ignorez ce message : rien ne changera.
+
+— L'Observatoire GIPAME
+Ce message ne contient aucune donnée de vente.

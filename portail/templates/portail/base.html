@@ -1,0 +1,94 @@
+{% load static fr %}<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#0B1238">
+<title>{% block titre %}{% endblock %} · Observatoire GIPAME</title>
+<link rel="icon" href="{% static 'portail/img/icone.svg' %}" type="image/svg+xml">
+<link rel="stylesheet" href="{% static 'portail/css/tokens.css' %}">
+<link rel="stylesheet" href="{% static 'portail/css/base.css' %}">
+{% block tete %}{% endblock %}
+</head>
+<body data-chart-js="{% static 'portail/js/chart.umd.js' %}">
+<a class="lien-evitement" href="#contenu">Aller au contenu</a>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-cadenas" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-telecharger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 19h16"/></symbol>
+  <symbol id="i-deposer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 20h16"/></symbol>
+  <symbol id="i-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></symbol>
+  <symbol id="i-alerte" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-erreur" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6"/><path d="m15 9-6 6"/></symbol>
+  <symbol id="i-excel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="m9 12 6 6"/><path d="m15 12-6 6"/></symbol>
+  <symbol id="i-fleche" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></symbol>
+  <symbol id="i-oeil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-vide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M4 7l2-4h12l2 4"/><path d="M9 12h6"/></symbol>
+</svg>
+
+<header class="entete">
+  <div class="entete__interieur">
+    <a class="entete__logo" href="{% url 'portail:racine' %}" aria-label="Observatoire GIPAME — accueil">
+      <img src="{% static 'portail/img/logo-bloc-inverse.svg' %}" alt="Observatoire GIPAME" width="214" height="64">
+    </a>
+    {% if user.is_authenticated %}
+    <button class="entete__menu-bouton" type="button" aria-expanded="false" aria-controls="navigation" data-menu>Menu</button>
+    <nav class="nav" id="navigation" aria-label="Navigation principale">
+      {% if user.role_metier == "MEMBRE" %}
+        <a href="{% url 'portail:accueil' %}" {% if page_active == "accueil" %}aria-current="page"{% endif %}>Accueil</a>
+        <a href="{% url 'portail:assistant' %}" {% if page_active == "declarer" %}aria-current="page"{% endif %}>Déclarer</a>
+        <a href="{% url 'portail:historique' %}" {% if page_active == "historique" %}aria-current="page"{% endif %}>Historique</a>
+        <a href="{% url 'portail:mon_annee' %}" {% if page_active == "mon_annee" %}aria-current="page"{% endif %}>Mon année</a>
+        <a href="{% url 'portail:marche' %}" {% if page_active == "marche" %}aria-current="page"{% endif %}>Le marché</a>
+        <a href="{% url 'portail:mes_produits' %}" {% if page_active == "mes_produits" %}aria-current="page"{% endif %}>Mes produits</a>
+      {% elif user.role_metier == "GESTION" or user.role_metier == "TECHNIQUE" %}
+        <a href="{% url 'portail:gestion_tableau' %}" {% if page_active == "gestion_tableau" %}aria-current="page"{% endif %}>Dépôts</a>
+        <a href="{% url 'portail:gestion_publications' %}" {% if page_active == "gestion_publications" %}aria-current="page"{% endif %}>Publications</a>
+        <a href="{% url 'portail:gestion_propositions' %}" {% if page_active == "gestion_propositions" %}aria-current="page"{% endif %}>Propositions</a>
+        <a href="{% url 'portail:gestion_membres' %}" {% if page_active == "gestion_membres" %}aria-current="page"{% endif %}>Membres</a>
+        <a href="{% url 'portail:gestion_catalogue' %}" {% if page_active == "gestion_catalogue" %}aria-current="page"{% endif %}>Catalogue</a>
+        <a href="{% url 'portail:gestion_demandes' %}" {% if page_active == "gestion_demandes" %}aria-current="page"{% endif %}>Accès exceptionnel</a>
+        {% if user.role_metier == "TECHNIQUE" %}<a href="{% url 'portail:admin_comptes' %}" {% if page_active == "admin_comptes" %}aria-current="page"{% endif %}>Comptes</a>{% endif %}
+      {% elif user.role_metier == "BUREAU" %}
+        <a href="{% url 'portail:bureau_tableau' %}" {% if page_active == "bureau_tableau" %}aria-current="page"{% endif %}>Le marché</a>
+        <a href="{% url 'portail:bureau_approbations' %}" {% if page_active == "bureau_approbations" %}aria-current="page"{% endif %}>Approbations</a>
+        <a href="{% url 'portail:bureau_journal' %}" {% if page_active == "bureau_journal" %}aria-current="page"{% endif %}>Journal des accès</a>
+      {% endif %}
+      <form method="post" action="{% url 'portail:deconnexion' %}">{% csrf_token %}
+        <button type="submit" class="nav__bouton">Se déconnecter</button>
+      </form>
+    </nav>
+    <div class="entete__compte">
+      <span>{% if user.role_metier == "MEMBRE" and user.membre %}<strong>{{ user.membre.raison_sociale|default:user.membre.code }}</strong>{% else %}<strong>{{ user.get_full_name|default:user.username }}</strong>{% endif %}</span>
+    </div>
+    {% endif %}
+  </div>
+</header>
+
+<main id="contenu" class="page {% block classe_page %}{% endblock %}">
+{% block contenu %}{% endblock %}
+</main>
+
+<footer class="pied">
+  <img src="{% static 'portail/img/logo-gipame.png' %}" alt="" width="40" height="40" style="opacity:.8;vertical-align:middle;margin-right:8px">
+  Observatoire GIPAME — Groupement interprofessionnel automobiles, matériels et équipementiers · Vos données ne sont visibles que de votre société et du calcul des totaux publiés.
+  <span style="display:block;margin-top:var(--e-2)"><a href="{% url 'portail:aide' %}">Aide</a> · <a href="{% url 'portail:confidentialite' %}">Charte de confidentialité</a></span>
+</footer>
+
+{% if messages %}
+<div class="messages-flash" role="status" aria-live="polite">
+  {% for m in messages %}
+  <div class="message message--{% if m.tags == 'error' %}erreur{% elif m.tags == 'success' %}succes{% elif m.tags == 'warning' %}alerte{% else %}info{% endif %}" data-flash>
+    <svg class="icone"><use href="#i-{% if m.tags == 'error' %}erreur{% elif m.tags == 'success' %}ok{% elif m.tags == 'warning' %}alerte{% else %}info{% endif %}"/></svg>
+    <p>{{ m }}</p>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<script src="{% static 'portail/js/htmx.min.js' %}" defer></script>
+<script src="{% static 'portail/js/portail.js' %}" defer></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,36 @@
+# Déploiement Render (« Blueprint ») de l'Observatoire GIPAME — voir GUIDE_DEMARRAGE_ET_RECETTE.md, étape 4.
+# La base de données N'EST PAS chez Render (base gratuite expirée après 30 jours) : elle est chez Neon, région Francfort.
+# Les migrations ne sont JAMAIS lancées par Render : elles se font depuis le poste de l'administrateur, avec la
+# connexion propriétaire (qui ne doit pas être stockée chez Render).
+services:
+  - type: web
+    name: observatoire-gipame
+    runtime: python
+    plan: free            # passer à « starter » (≈ 7 $/mois) pour supprimer la mise en veille après 15 min
+    region: frankfurt     # même région que la base Neon (aws-eu-central-1)
+    branch: main
+    autoDeploy: true
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: gunicorn config.wsgi:application --workers 2 --timeout 120 --access-logfile -
+    healthCheckPath: /sante/
+    envVars:
+      - key: DJANGO_DEBUG
+        value: "0"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: GIPAME_CLE_GABARIT        # générée une fois ; ne JAMAIS la changer (invaliderait les gabarits distribués)
+        generateValue: true
+      - key: GIPAME_DB_URL             # URL Neon du rôle gipame_app (PAS le propriétaire), avec ?sslmode=require
+        sync: false
+      - key: GIPAME_URL_PUBLIQUE       # ex. https://observatoire-gipame.onrender.com (sans / final)
+        sync: false
+      - key: GIPAME_EMAIL_EXPEDITEUR   # ex. Observatoire GIPAME <observatoire@gipame.ci>
+        sync: false
+      - key: GIPAME_SMTP_HOTE          # ex. smtp-relay.brevo.com
+        sync: false
+      - key: GIPAME_SMTP_PORT
+        value: "587"
+      - key: GIPAME_SMTP_UTILISATEUR
+        sync: false
+      - key: GIPAME_SMTP_MOT_DE_PASSE
+        sync: false

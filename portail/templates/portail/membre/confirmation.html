@@ -1,0 +1,27 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Déclaration reçue{% endblock %}
+{% block classe_page %}page--etroite{% endblock %}
+{% block tete %}<style>
+  .coche { width: 72px; height: 72px; border-radius: 50%; background: var(--succes-100); color: var(--succes-600); display: grid; place-items: center; margin: 0 auto var(--e-4); }
+  .coche svg { width: 36px; height: 36px; }
+  .recap { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--e-4); margin: var(--e-6) 0; }
+  @media (max-width: 680px) { .recap { grid-template-columns: 1fr; } }
+</style>{% endblock %}
+{% block contenu %}
+<section class="carte centre" style="padding:var(--e-10) var(--e-6)">
+  <div class="coche" aria-hidden="true"><svg><use href="#i-ok"/></svg></div>
+  <h1>Déclaration {{ declaration.mois|de_mois }} reçue</h1>
+  <p class="mt-2">Merci. Version {{ declaration.version }}, soumise le {{ declaration.soumise_le|date_heure }}.</p>
+  <div class="recap">
+    <div class="kpi"><span class="kpi__libelle">Véhicules déclarés</span><span class="kpi__valeur">{{ total|nombre }}</span></div>
+    <div class="kpi"><span class="kpi__libelle">Produits vendus</span><span class="kpi__valeur">{{ nb_lignes_non_nulles|nombre }}</span><span class="kpi__detail">sur {{ nb_lignes|nombre }} dans votre gabarit</span></div>
+    <div class="kpi"><span class="kpi__libelle">Visible par</span><span class="kpi__valeur" style="font-size:var(--t-18)">{{ membre.raison_sociale|default:membre.code }}</span><span class="kpi__detail">et le calcul des totaux publiés</span></div>
+  </div>
+  <div class="actions" style="justify-content:center">
+    <a class="btn btn--primaire btn--large" href="{% url 'portail:mon_annee' %}?annee={{ annee }}">Voir mon année <svg><use href="#i-fleche"/></svg></a>
+    <a class="btn btn--secondaire" href="{% url 'portail:marche' %}?annee={{ annee }}">Le marché</a>
+    <a class="btn btn--discret" href="{% url 'portail:accueil' %}">Accueil</a>
+  </div>
+  <p class="petit mt-6">Une erreur ? Vous pouvez <a href="{% url 'portail:assistant' %}?mois={{ declaration.mois|date:'Y-m' }}">corriger cette déclaration</a> : la nouvelle version remplacera celle-ci, qui restera conservée.</p>
+</section>
+{% endblock %}

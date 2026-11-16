@@ -1,0 +1,7 @@
+{% extends "portail/compte/_base_compte.html" %}
+{% block titre %}Lien envoyé{% endblock %}
+{% block carte %}
+<h1>Vérifiez votre messagerie</h1>
+<p class="sous">Si l'adresse indiquée correspond à un compte, un e-mail vient de partir. Pensez au dossier « indésirables ». Le lien est valable 24 heures.</p>
+<a class="btn btn--secondaire btn--bloc" href="{% url 'portail:connexion' %}">Retour à la connexion</a>
+{% endblock %}

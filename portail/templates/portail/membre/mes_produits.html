@@ -1,0 +1,55 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Mes produits{% endblock %}
+{% block contenu %}
+<div class="page__tete">
+  <div><h1>Mes produits</h1><p>Les lignes de votre gabarit : {{ nb_affiches }} affichée{{ nb_affiches|pluralize }}, {{ masques|length }} masquée{{ masques|length|pluralize }}, {{ proposes|length }} en attente de validation.</p></div>
+  <a class="btn btn--primaire" href="#proposer">Proposer un produit</a>
+</div>
+
+<div class="grille grille--principale">
+  <section class="carte" style="padding:0" aria-labelledby="t-liste">
+    <div class="carte__tete" style="padding:var(--e-5) var(--e-6) 0"><h2 id="t-liste">Catalogue de mes marques</h2><span class="petit">Masquer retire la ligne de vos gabarits ; rien n'est supprimé.</span></div>
+    <div class="tableau-conteneur" style="border:none">
+      <table class="tableau tableau--dense">
+        <thead><tr><th>Produit</th><th>Énergie</th><th>Dans mon gabarit</th><th></th></tr></thead>
+        <tbody>
+        {% for p in actifs %}
+          <tr>
+            <td><strong>{{ p.libelle_affiche }}</strong><div class="petit">{{ p.modele.marque.nom }} · {{ p.code }}</div></td>
+            <td>{{ p.energie.libelle|default:"—" }}</td>
+            <td>{% if p.id in masques %}<span class="badge badge--neutre">Masqué</span>{% else %}<span class="badge badge--soumise">Affiché</span>{% endif %}</td>
+            <td class="droite"><form method="post" action="{% url 'portail:changer_affichage' p.id %}">{% csrf_token %}
+              {% if p.id in masques %}<input type="hidden" name="action" value="afficher"><button class="btn btn--petit btn--secondaire" type="submit">Réafficher</button>
+              {% else %}<input type="hidden" name="action" value="masquer"><button class="btn btn--petit btn--discret" type="submit">Masquer</button>{% endif %}</form></td>
+          </tr>
+        {% empty %}<tr><td colspan="4" class="vide">Aucun produit actif pour vos marques.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <aside class="empile">
+    {% if proposes %}
+    <section class="carte" aria-labelledby="t-proposes">
+      <div class="carte__tete"><h3 id="t-proposes">En attente de validation</h3></div>
+      <ul class="chrono">{% for p in proposes %}<li><time>{{ p.cree_le|date_courte }}</time><strong>{{ p.libelle_affiche }}</strong> <span class="badge badge--attente">En attente</span><div class="petit">{% firstof p.marque_proposee.nom p.modele.marque.nom %} · {{ p.energie.libelle|default:"" }}</div></li>{% endfor %}</ul>
+    </section>
+    {% endif %}
+    <section class="carte carte--accent" id="proposer" aria-labelledby="t-proposer">
+      <div class="carte__tete"><h3 id="t-proposer">Proposer un produit</h3></div>
+      <p class="petit">Un modèle ou une version absents de votre gabarit ? Décrivez-le : le GIPAME le vérifie, le classe, puis il apparaît dans vos prochains gabarits.</p>
+      <form method="post" novalidate>{% csrf_token %}
+        {% if formulaire.non_field_errors %}<div class="message message--erreur mb-4"><svg class="icone"><use href="#i-erreur"/></svg><p>{{ formulaire.non_field_errors.0 }}</p></div>{% endif %}
+        {% for champ in formulaire %}
+        <div class="champ {% if champ.errors %}champ--erreur{% endif %}">
+          <label for="{{ champ.id_for_label }}">{{ champ.label }}{% if not champ.field.required %} <span class="discret">(facultatif)</span>{% endif %}</label>{{ champ }}
+          {% if champ.help_text %}<span class="champ__aide">{{ champ.help_text }}</span>{% endif %}
+          {% for e in champ.errors %}<span class="champ__erreur">{{ e }}</span>{% endfor %}
+        </div>
+        {% endfor %}
+        <button class="btn btn--primaire btn--bloc" type="submit">Envoyer la proposition</button>
+      </form>
+    </section>
+  </aside>
+</div>
+{% endblock %}

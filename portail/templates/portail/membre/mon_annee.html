@@ -1,0 +1,52 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Mon année {{ annee }}{% endblock %}
+{% block contenu %}
+<div class="page__tete">
+  <div><h1>Mon année {{ annee }}</h1><p>Vos ventes déclarées, mois par mois. Visible uniquement par {{ membre.raison_sociale|default:membre.code }}.</p></div>
+  <div class="ligne">
+    <form method="get" class="ligne"><label class="petit" for="annee">Année</label>
+      <select id="annee" name="annee" class="entree" style="width:auto;min-height:40px" onchange="this.form.submit()">{% for a in annees %}<option value="{{ a }}" {% if a == annee %}selected{% endif %}>{{ a }}</option>{% endfor %}</select></form>
+    <a class="btn btn--secondaire" href="{% url 'portail:export_annee' %}?annee={{ annee }}"><svg><use href="#i-excel"/></svg> Exporter en Excel</a>
+  </div>
+</div>
+
+{% if nb_mois %}
+<div class="grille grille--4 mb-6">
+  <div class="carte kpi"><span class="kpi__libelle">Total {{ annee }}</span><span class="kpi__valeur">{{ total_annee|nombre }}</span><span class="kpi__detail">véhicules sur {{ nb_mois }} mois déclaré{{ nb_mois|pluralize }}</span></div>
+  <div class="carte kpi"><span class="kpi__libelle">Moyenne mensuelle</span><span class="kpi__valeur">{{ moyenne|nombre }}</span><span class="kpi__detail">véhicules par mois</span></div>
+  <div class="carte kpi"><span class="kpi__libelle">Meilleur mois</span><span class="kpi__valeur">{{ totaux|cle:meilleur_mois|nombre }}</span><span class="kpi__detail">{{ meilleur_mois_libelle }} {{ annee }}</span></div>
+  <div class="carte kpi"><span class="kpi__libelle">Produits vendus</span><span class="kpi__valeur">{{ lignes|length|nombre }}</span><span class="kpi__detail">références différentes</span></div>
+</div>
+
+<div class="grille grille--principale mb-6">
+  <section class="carte" aria-labelledby="t-courbe">
+    <div class="carte__tete"><h2 id="t-courbe">Ventes par mois</h2></div>
+    <div class="graphique"><canvas data-graphique='{"type":"bar","labels":["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."],"series":[{"label":"Mes ventes","data":{{ serie_json }}}]}' role="img" aria-label="Histogramme de mes ventes mensuelles"></canvas></div>
+  </section>
+  <section class="carte" aria-labelledby="t-energie">
+    <div class="carte__tete"><h2 id="t-energie">Par énergie</h2></div>
+    <table class="tableau tableau--dense"><tbody id="energies"></tbody></table>
+    <script>document.addEventListener("DOMContentLoaded",function(){var t={{ energies_json|safe }},c=document.getElementById("energies"),tot=t.reduce(function(a,b){return a+b[1]},0);t.forEach(function(e){var r=c.insertRow();r.insertCell().textContent=e[0];var n=r.insertCell();n.className="num chiffre";n.textContent=e[1].toLocaleString("fr-FR");var p=r.insertCell();p.className="num petit";p.textContent=tot?(Math.round(e[1]/tot*1000)/10).toLocaleString("fr-FR")+" %":"";});});</script>
+  </section>
+</div>
+
+<section class="carte" style="padding:0" aria-labelledby="t-tableau">
+  <div class="carte__tete" style="padding:var(--e-5) var(--e-6) 0"><h2 id="t-tableau">Détail par produit</h2><span class="petit">— : mois non déclaré</span></div>
+  <div class="tableau-conteneur" style="border:none">
+    <table class="tableau tableau--dense tableau--mois">
+      <thead><tr><th class="fige">Produit</th>{% for m in mois_courts %}<th>{{ m }}</th>{% endfor %}<th>Total</th></tr></thead>
+      <tbody>
+        {% for l in lignes %}
+        <tr><td class="fige"><strong>{{ l.produit.libelle_affiche }}</strong><div class="petit">{{ l.marque }} · {{ l.produit.code }}</div></td>
+          {% for q in l.mois %}<td class="chiffre">{% if q is None %}<span class="discret">—</span>{% else %}{{ q|nombre }}{% endif %}</td>{% endfor %}
+          <td class="chiffre"><strong>{{ l.total|nombre }}</strong></td></tr>
+        {% endfor %}
+        <tr class="total"><td class="fige">Total</td>{% for m in mois_courts %}{% with n=forloop.counter %}<td class="chiffre">{% if n in mois_declares %}{{ totaux|cle:n|nombre }}{% else %}<span class="discret">—</span>{% endif %}</td>{% endwith %}{% endfor %}<td class="chiffre">{{ total_annee|nombre }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+{% else %}
+<div class="carte vide"><svg><use href="#i-vide"/></svg><h2>Aucune déclaration soumise en {{ annee }}</h2><p class="mt-2">Dès votre première déclaration, vos chiffres apparaîtront ici, avec un export Excel.</p><a class="btn btn--primaire" href="{% url 'portail:assistant' %}">Déclarer</a></div>
+{% endif %}
+{% endblock %}

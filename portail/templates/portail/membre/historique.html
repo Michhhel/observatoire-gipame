@@ -1,0 +1,45 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Historique{% endblock %}
+{% block contenu %}
+<div class="page__tete"><div><h1>Historique</h1><p>Toutes vos déclarations et tous vos dépôts, version par version. Rien n'est jamais effacé.</p></div>
+  <span class="confiance"><svg><use href="#i-cadenas"/></svg> Visible uniquement par {{ membre.raison_sociale|default:membre.code }}</span></div>
+
+<div class="grille grille--principale">
+  <section class="carte" aria-labelledby="t-decl" style="padding:0">
+    <div class="carte__tete" style="padding:var(--e-5) var(--e-6) 0"><h2 id="t-decl">Déclarations</h2></div>
+    {% if declarations %}
+    <div class="tableau-conteneur" style="border:none">
+      <table class="tableau">
+        <thead><tr><th>Mois</th><th>Version</th><th>Statut</th><th>Soumise le</th><th>Motif de correction</th></tr></thead>
+        <tbody>
+        {% for d in declarations %}
+          <tr>
+            <td><strong>{{ d.mois|mois_titre }}</strong></td>
+            <td class="chiffre">v{{ d.version }}</td>
+            <td><span class="badge {{ d.statut|badge_statut }}">{{ d.statut|libelle_statut }}</span></td>
+            <td>{{ d.soumise_le|date_heure }}</td>
+            <td class="petit">{{ d.motif_correction|default:"—" }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}<div class="vide"><svg><use href="#i-vide"/></svg><p>Aucune déclaration pour l'instant.</p><a class="btn btn--primaire" href="{% url 'portail:assistant' %}">Déclarer</a></div>{% endif %}
+  </section>
+
+  <section class="carte" aria-labelledby="t-depots">
+    <div class="carte__tete"><h2 id="t-depots">Dépôts de fichiers</h2></div>
+    {% if depots %}
+    <ul class="chrono">
+      {% for p in depots %}
+      <li class="{% if p.resultat == 'REJETE' %}chrono--attention{% else %}chrono--fait{% endif %}">
+        <time>{{ p.cree_le|date_heure }}</time>
+        <a href="{% url 'portail:rapport' p.id %}">{{ p.mois|mois_titre }}</a> · <span class="badge {{ p.resultat|badge_statut }}">{{ p.resultat|libelle_statut }}</span>
+        <div class="petit">{{ p.nom_fichier }}{% if p.nb_erreurs %} · {{ p.nb_erreurs }} erreur{{ p.nb_erreurs|pluralize }}{% endif %}{% if p.nb_alertes %} · {{ p.nb_alertes }} alerte{{ p.nb_alertes|pluralize }}{% endif %}</div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="discret">Aucun dépôt pour l'instant.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

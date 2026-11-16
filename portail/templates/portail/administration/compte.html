@@ -1,0 +1,50 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Compte · {{ profil.username }}{% endblock %}
+{% block contenu %}
+<div class="page__tete"><div><span class="kpi__libelle">{% if profil.role_metier == "MEMBRE" %}Membre · {{ profil.membre.code }}{% elif profil.role_metier == "GESTION" %}Gestion{% elif profil.role_metier == "BUREAU" %}Bureau{% else %}Administrateur{% endif %}</span>
+  <h1>{{ profil.first_name }} {{ profil.last_name }}</h1><p>{{ profil.username }} · créé le {{ profil.cree_le|date_courte }}</p></div>
+  {% if not profil.is_active %}<span class="badge badge--rejete">Désactivé</span>{% elif not profil.compte_active %}<span class="badge badge--attente">En attente d'activation</span>{% else %}<span class="badge badge--soumise">Actif</span>{% endif %}</div>
+
+{% if lien %}
+<section class="carte carte--succes mb-6" aria-labelledby="t-lien">
+  <h2 id="t-lien">Lien d'activation pour {{ lien.email }}</h2>
+  <p class="petit">Valable 24 heures, utilisable une seule fois. Transmettez-le par un canal sûr (pas de message public). Il ne s'affichera plus après cette page.</p>
+  <p><code style="display:block;padding:var(--e-3);background:var(--surface-2);border-radius:var(--rayon-s);word-break:break-all;user-select:all">{{ lien.lien }}</code></p>
+</section>
+{% endif %}
+
+<div class="grille grille--principale">
+  <section class="carte" aria-labelledby="t-modif">
+    <div class="carte__tete"><h2 id="t-modif">Identité</h2></div>
+    <form method="post" novalidate>{% csrf_token %}
+      {% if formulaire.non_field_errors %}<div class="message message--erreur mb-4"><svg class="icone"><use href="#i-erreur"/></svg><p>{{ formulaire.non_field_errors.0 }}</p></div>{% endif %}
+      {% for champ in formulaire %}<div class="champ {% if champ.errors %}champ--erreur{% endif %}"><label for="{{ champ.id_for_label }}">{{ champ.label }}</label>{{ champ }}{% for e in champ.errors %}<span class="champ__erreur">{{ e }}</span>{% endfor %}</div>{% endfor %}
+      <button class="btn btn--primaire" type="submit">Enregistrer</button>
+    </form>
+  </section>
+
+  <aside class="empile">
+    {% if profil.is_active and not profil.compte_active %}
+    <section class="carte"><h3>Activation</h3><p class="petit mt-2">Cette personne n'a pas encore choisi son mot de passe.</p>
+      <form method="post" action="{% url 'portail:admin_compte_action' profil.id %}" class="actions mt-4">{% csrf_token %}
+        <button class="btn btn--primaire" name="action" value="envoyer" type="submit">Renvoyer le lien par e-mail</button>
+        <button class="btn btn--secondaire" name="action" value="lien" type="submit">Afficher le lien</button>
+      </form></section>
+    {% elif profil.is_active %}
+    <section class="carte"><h3>Mot de passe</h3><p class="petit mt-2">Compte activé le plus récemment utilisé le {{ profil.derniere_connexion|date_heure }}. En cas d'oubli, la personne utilise « Mot de passe oublié » sur la page de connexion : vous n'avez rien à faire.</p></section>
+    {% endif %}
+    <section class="carte {% if profil.is_active %}carte--alerte{% endif %}">
+      <h3>{% if profil.is_active %}Désactiver{% else %}Réactiver{% endif %} le compte</h3>
+      {% if moi %}<p class="petit mt-2">Vous ne pouvez pas désactiver votre propre compte.</p>
+      {% else %}
+      <form method="post" action="{% url 'portail:admin_compte_action' profil.id %}" class="mt-4">{% csrf_token %}
+        <div class="champ"><label for="motif">Motif {% if profil.is_active %}(obligatoire, conservé dans le journal){% else %}(facultatif){% endif %}</label><input class="entree" id="motif" name="motif" maxlength="300" placeholder="Ex. : a quitté la société"></div>
+        {% if profil.is_active %}<button class="btn btn--danger" name="action" value="desactiver" type="submit">Désactiver</button>
+        {% else %}<button class="btn btn--primaire" name="action" value="reactiver" type="submit">Réactiver</button>{% endif %}
+      </form>
+      {% endif %}
+    </section>
+    <a class="btn btn--discret" href="{% url 'portail:admin_comptes' %}">← Tous les comptes</a>
+  </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "portail/base.html" %}
+{% block classe_page %}page--etroite{% endblock %}
+{% block contenu %}
+<div class="carte vide">
+  <svg><use href="#i-{% block icone %}vide{% endblock %}"/></svg>
+  <h1>{% block entete %}{% endblock %}</h1>
+  <p class="mt-2">{% block explication %}{% endblock %}</p>
+  <a class="btn btn--primaire mt-4" href="{% url 'portail:racine' %}">Retour à l'accueil</a>
+</div>
+{% endblock %}

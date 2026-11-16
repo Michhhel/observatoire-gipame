@@ -1,0 +1,25 @@
+{% extends "portail/compte/_base_compte.html" %}
+{% block titre %}Connexion{% endblock %}
+{% block carte %}
+<h1>Bonjour,</h1>
+<p class="sous">Connectez-vous pour déclarer vos ventes et consulter le marché.</p>
+<form method="post" novalidate>{% csrf_token %}
+  {% if form.non_field_errors %}<div class="message message--erreur erreurs-formulaire"><svg class="icone"><use href="#i-erreur"/></svg><p>{{ form.non_field_errors.0 }}</p></div>{% endif %}
+  <div class="champ {% if form.username.errors %}champ--erreur{% endif %}">
+    <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+    {{ form.username }}
+    {% for e in form.username.errors %}<span class="champ__erreur">{{ e }}</span>{% endfor %}
+  </div>
+  <div class="champ {% if form.password.errors %}champ--erreur{% endif %}">
+    <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+    {{ form.password }}
+    {% for e in form.password.errors %}<span class="champ__erreur">{{ e }}</span>{% endfor %}
+  </div>
+  <input type="hidden" name="next" value="{{ next }}">
+  <button class="btn btn--primaire btn--large btn--bloc" type="submit">Se connecter</button>
+  <div class="liens">
+    <a href="{% url 'portail:mot_de_passe_oublie' %}">Mot de passe oublié ?</a>
+    <span class="discret">Pas de compte ? Contactez le GIPAME.</span>
+  </div>
+</form>
+{% endblock %}

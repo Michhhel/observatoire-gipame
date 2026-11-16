@@ -1,0 +1,35 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Le marché {{ annee }}{% endblock %}
+{% block contenu %}
+<div class="page__tete">
+  <div><h1>Le marché GIPAME en {{ annee }}</h1><p>Totaux publiés, {{ nb_membres }} membres véhicules. Aucune donnée individuelle n'est accessible depuis cet écran.</p></div>
+  <form method="get" class="ligne"><label class="petit" for="annee">Année</label>
+    <select id="annee" name="annee" class="entree" style="width:auto;min-height:40px" onchange="this.form.submit()">{% for a in annees %}<option value="{{ a }}" {% if a == annee %}selected{% endif %}>{{ a }}</option>{% endfor %}</select></form>
+</div>
+
+{% if nb_mois_publies %}
+<div class="grille grille--4 mb-6">
+  <div class="carte kpi carte--mise-en-avant"><span class="kpi__libelle" style="color:rgba(255,255,255,.75)">{{ dernier_mois|mois_titre }}</span><span class="kpi__valeur" style="color:#fff">{{ total_dernier|nombre|default:"c" }}</span><span class="kpi__detail" style="color:rgba(255,255,255,.8)">véhicules neufs · {{ derniere.statut|libelle_statut }}{% if tendance is not None %} · <span class="tendance {% if tendance >= 0 %}tendance--hausse{% else %}tendance--baisse{% endif %}">{% if tendance > 0 %}+{% endif %}{{ tendance|pourcentage }}</span> vs mois précédent{% endif %}</span></div>
+  <div class="carte kpi"><span class="kpi__libelle">Cumul {{ annee }}</span><span class="kpi__valeur">{{ cumul|nombre }}</span><span class="kpi__detail">sur {{ nb_mois_publies }} mois publié{{ nb_mois_publies|pluralize }}</span></div>
+  <div class="carte kpi"><span class="kpi__libelle">Participation</span><span class="kpi__valeur">{{ derniere.nb_membres_declarants }}<span class="discret" style="font-size:var(--t-16)"> / {{ derniere.nb_membres_attendus }}</span></span><span class="kpi__detail">membres ayant déclaré {{ dernier_mois|mois_court }}</span></div>
+  <div class="carte kpi {% if en_attente %}carte--alerte{% endif %}"><span class="kpi__libelle">Accès exceptionnels</span><span class="kpi__valeur">{{ en_attente }}</span><span class="kpi__detail"><a href="{% url 'portail:bureau_approbations' %}">demande{{ en_attente|pluralize }} à examiner</a></span></div>
+</div>
+
+<section class="carte mb-6" aria-labelledby="t-courbe">
+  <div class="carte__tete"><h2 id="t-courbe">Marché mensuel publié</h2></div>
+  <div class="graphique"><canvas data-graphique='{"type":"bar","labels":["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."],"series":[{"label":"Marché GIPAME","data":{{ total_json }}}]}' role="img" aria-label="Histogramme du marché mensuel publié"></canvas></div>
+</section>
+
+<section class="carte" style="padding:0" aria-labelledby="t-tableau">
+  <div class="carte__tete" style="padding:var(--e-5) var(--e-6) 0"><h2 id="t-tableau">Par type de véhicule et origine</h2><span class="petit">« c » : confidentiel (règle des trois contributeurs / 80 %)</span></div>
+  <div class="tableau-conteneur" style="border:none">
+    <table class="tableau tableau--dense tableau--mois">
+      <thead><tr><th class="fige">Ligne</th>{% for m in mois_courts %}<th>{{ m }}</th>{% endfor %}</tr></thead>
+      <tbody>{% for l in lignes %}<tr {% if l.dimension == "TOTAL" %}class="total"{% endif %}><td class="fige">{% if l.dimension == "SEGMENT" %}<span style="padding-left:var(--e-4)">{{ l.libelle }}</span>{% else %}<strong>{{ l.libelle }}</strong>{% if l.dimension == "ORIGINE" %} <span class="petit">· origine</span>{% elif l.dimension == "ENERGIE" %} <span class="petit">· énergie</span>{% endif %}{% endif %}</td>{% for v in l.valeurs %}<td class="chiffre">{% if v is None %}<span class="discret">—</span>{% elif v == "c" %}<span class="c" title="Confidentiel">c</span>{% else %}{{ v|nombre }}{% endif %}</td>{% endfor %}</tr>{% endfor %}</tbody>
+    </table>
+  </div>
+</section>
+{% else %}
+<div class="carte vide"><svg><use href="#i-vide"/></svg><h2>Aucune publication pour {{ annee }}</h2></div>
+{% endif %}
+{% endblock %}

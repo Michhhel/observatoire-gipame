@@ -1,0 +1,15 @@
+# PostgreSQL 16 pour le développement (NON TESTÉ dans l'environnement de construction).
+# L'utilisateur POSTGRES_USER est superutilisateur : c'est le « compte propriétaire de développement ».
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: gipame_dev
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: gipame
+    ports:
+      - "5432:5432"
+    volumes:
+      - gipame_pg:/var/lib/postgresql/data
+volumes:
+  gipame_pg: {}

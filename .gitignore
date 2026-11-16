@@ -1,0 +1,48 @@
+# ---------------------------------------------------------------------------
+# Observatoire GIPAME : ce qui ne va JAMAIS dans le dépôt
+# ---------------------------------------------------------------------------
+
+# Données : aucune donnée réelle (le vrai fichier du client reste sur le poste de l'administrateur)
+donnees_reelles/
+sauvegardes/
+*.dump
+*.sql.gz
+*.xlsm
+*.sqlite3
+
+# Documents internes de passation : ils citent des constats tirés du vrai fichier du client
+PROJET_GIPAME.md
+PROMPT_DE_REPRISE.md
+
+# Secrets et réglages locaux
+.env
+.env.*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Django
+staticfiles/
+media/
+
+# Sorties générées
+sortie*/
+*.log
+
+# Éditeurs et système
+.vscode/
+.idea/
+*.swp
+~$*
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Dossiers de travail de l'assistant
+Claude outputs/

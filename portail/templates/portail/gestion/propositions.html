@@ -1,0 +1,33 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Produits proposés{% endblock %}
+{% block contenu %}
+<div class="page__tete"><div><h1>Produits proposés</h1><p>Propositions des membres (onglet AJOUTS ou portail). Valider, fusionner vers un produit existant, ou rejeter avec motif.</p></div></div>
+
+<section class="carte" style="padding:0" aria-labelledby="t-attente">
+  <div class="carte__tete" style="padding:var(--e-5) var(--e-6) 0"><h2 id="t-attente">En attente</h2><span class="badge badge--attente">{{ en_attente|length }}</span></div>
+  <div class="tableau-conteneur" style="border:none">
+    <table class="tableau">
+      <thead><tr><th>Proposé le</th><th>Membre</th><th>Marque · modèle · version</th><th>Énergie / boîte</th><th>Type suggéré</th><th></th></tr></thead>
+      <tbody>
+      {% for p in en_attente %}
+        <tr>
+          <td>{{ p.cree_le|date_courte }}</td>
+          <td>{{ p.propose_par.code }}</td>
+          <td><strong>{% firstof p.marque_proposee.nom p.modele.marque.nom %} {{ p.libelle_affiche }}</strong>{% if p.note_proposition %}<div class="petit">{{ p.note_proposition }}</div>{% endif %}</td>
+          <td>{{ p.energie.libelle|default:"—" }}{% if p.boite %} · {{ p.boite.libelle }}{% endif %}</td>
+          <td class="petit">{{ p.segment_propose|default:"—" }}</td>
+          <td class="droite"><a class="btn btn--petit btn--primaire" href="{% url 'portail:gestion_proposition' p.id %}">Traiter</a></td>
+        </tr>
+      {% empty %}<tr><td colspan="6" class="vide">Aucune proposition en attente.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="grille grille--2 mt-6">
+  <section class="carte"><h3>Récemment validés</h3>
+    <ul class="chrono mt-4">{% for p in recentes %}<li class="chrono--fait"><time>{{ p.decide_le|date_courte }}</time>{{ p.code }} {{ p.libelle_affiche }} <span class="petit">· proposé par {{ p.propose_par.code }}</span></li>{% empty %}<li class="discret">Aucun.</li>{% endfor %}</ul></section>
+  <section class="carte"><h3>Fusionnés ou rejetés</h3>
+    <ul class="chrono mt-4">{% for p in traitees %}<li><time>{{ p.decide_le|date_courte }}</time>{{ p.libelle_affiche }} <span class="badge {{ p.statut|badge_statut }}">{{ p.statut|libelle_statut }}</span>{% if p.fusionne_dans %}<div class="petit">→ {{ p.fusionne_dans.code }} {{ p.fusionne_dans.libelle_affiche }}</div>{% endif %}{% if p.motif_decision %}<div class="petit">{{ p.motif_decision }}</div>{% endif %}</li>{% empty %}<li class="discret">Aucun.</li>{% endfor %}</ul></section>
+</div>
+{% endblock %}

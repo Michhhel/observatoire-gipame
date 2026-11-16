@@ -1,0 +1,102 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Accueil{% endblock %}
+{% block contenu %}
+<div class="page__tete">
+  <div>
+    <h1>Bonjour {{ user.first_name|default:"" }}</h1>
+    <p>{{ membre.raison_sociale|default:membre.code }}{% if membre.raison_sociale %} · {{ membre.code }}{% endif %}</p>
+  </div>
+  <span class="confiance"><svg><use href="#i-cadenas"/></svg> Vos ventes ne sont visibles que de votre société</span>
+</div>
+
+<div class="grille grille--principale">
+  <div class="empile">
+    {# --- Carte du mois à déclarer ------------------------------------------------------- #}
+    {% if situation.etat == "SOUMISE" %}
+    <section class="carte carte--succes" aria-labelledby="t-mois">
+      <div class="carte__tete">
+        <div><span class="kpi__libelle">Déclaration {{ situation.mois|de_mois }}</span><h2 id="t-mois">Reçue, merci.</h2></div>
+        <span class="badge badge--soumise">Soumise</span>
+      </div>
+      <p>Version {{ situation.soumise.version }}, soumise le {{ situation.soumise.soumise_le|date_heure }}.
+        {% if total_mois is not None %}<strong class="chiffre">{{ total_mois|nombre }}</strong> véhicules sur {{ situation.mois|mois_long }}.{% endif %}</p>
+      <div class="actions">
+        <a class="btn btn--secondaire" href="{% url 'portail:assistant' %}?mois={{ situation.mois|date:'Y-m' }}">Corriger cette déclaration</a>
+        <a class="btn btn--discret" href="{% url 'portail:mon_annee' %}?annee={{ annee }}">Voir mon année <svg><use href="#i-fleche"/></svg></a>
+      </div>
+    </section>
+    {% elif situation.etat == "BROUILLON" %}
+    <section class="carte carte--alerte" aria-labelledby="t-mois">
+      <div class="carte__tete">
+        <div><span class="kpi__libelle">Déclaration {{ situation.mois|de_mois }}</span><h2 id="t-mois">Un brouillon attend votre validation</h2></div>
+        <span class="badge badge--brouillon">Brouillon</span>
+      </div>
+      <p>Votre fichier a été contrôlé et enregistré, mais la déclaration n'est pas encore soumise. {{ situation.delai }} (limite : {{ situation.date_limite|date_courte }}).</p>
+      <div class="actions">
+        <a class="btn btn--primaire btn--large" href="{% url 'portail:assistant' %}?mois={{ situation.mois|date:'Y-m' }}">Reprendre et soumettre <svg><use href="#i-fleche"/></svg></a>
+      </div>
+    </section>
+    {% else %}
+    <section class="carte carte--mise-en-avant" aria-labelledby="t-mois">
+      <span class="kpi__libelle" style="color:rgba(255,255,255,.75)">Déclaration {{ situation.mois|de_mois }}</span>
+      <h2 id="t-mois" style="font-size:var(--t-28);margin:var(--e-1) 0 var(--e-2)">{% if situation.en_retard %}Elle est attendue{% else %}À déposer avant le {{ situation.date_limite|date_courte }}{% endif %}</h2>
+      <p>{{ situation.delai }}. Trois étapes, cinq minutes : téléchargez votre gabarit, remplissez-le dans Excel, déposez-le ici.</p>
+      <div class="actions">
+        <a class="btn btn--large" style="background:#fff;color:var(--nuit-900)" href="{% url 'portail:assistant' %}">Déclarer {{ situation.mois|mois_long }} <svg><use href="#i-fleche"/></svg></a>
+      </div>
+    </section>
+    {% endif %}
+
+    {# --- Mes 12 derniers mois ----------------------------------------------------------- #}
+    <section class="carte" aria-labelledby="t-douze">
+      <div class="carte__tete"><h3 id="t-douze">Mes 12 derniers mois</h3><a class="petit" href="{% url 'portail:historique' %}">Tout l'historique</a></div>
+      <ul class="chrono">
+        {% for m in douze_mois|slice:":6" %}
+        <li class="{% if m.etat == 'SOUMISE' %}chrono--fait{% elif m.en_retard %}chrono--attention{% endif %}">
+          <div class="ligne"><strong>{{ m.mois|mois_titre }}</strong>
+            {% if m.etat == "SOUMISE" %}<span class="badge badge--soumise">Soumise</span>
+            {% elif m.etat == "BROUILLON" %}<span class="badge badge--brouillon">Brouillon</span>
+            {% elif m.en_retard %}<span class="badge badge--retard">Attendue</span><a class="petit" href="{% url 'portail:assistant' %}?mois={{ m.mois|date:'Y-m' }}">Déclarer</a>
+            {% elif not m.attendue %}<span class="badge badge--neutre">Non requise</span>
+            {% else %}<span class="badge badge--neutre">À venir</span>{% endif %}
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+
+  <aside class="empile">
+    <section class="carte" aria-labelledby="t-mois-kpi">
+      <h3 id="t-mois-kpi" class="kpi__libelle">Mon dernier mois déclaré</h3>
+      {% if total_mois is not None %}
+      <div class="kpi mt-2">
+        <span class="kpi__valeur">{{ total_mois|nombre }}</span>
+        <span class="kpi__detail">véhicules en {{ situation.mois|mois_long }}
+          {% if tendance is not None %}<span class="tendance {% if tendance > 0 %}tendance--hausse{% elif tendance < 0 %}tendance--baisse{% else %}tendance--stable{% endif %}">{% if tendance > 0 %}+{% endif %}{{ tendance|pourcentage }}</span> vs {{ mois_precedent|mois_court }}{% endif %}</span>
+      </div>
+      {% else %}
+      <p class="discret mt-2">Dès votre première déclaration soumise, votre chiffre du mois apparaîtra ici.</p>
+      {% endif %}
+    </section>
+    <section class="carte carte--accent" aria-labelledby="t-contrepartie">
+      <h3 id="t-contrepartie">Ce que vous recevez en retour</h3>
+      <p class="petit mt-2">Les totaux du marché GIPAME, par type de véhicule et par origine, dès que trois membres ou plus ont déclaré. Une cellule « c » signifie qu'un total est masqué pour protéger la confidentialité d'un concurrent — et la vôtre.</p>
+      <div class="actions"><a class="btn btn--secondaire btn--petit" href="{% url 'portail:marche' %}">Le marché</a><a class="btn btn--secondaire btn--petit" href="{% url 'portail:mon_annee' %}">Mon année</a></div>
+    </section>
+    <section class="carte" aria-labelledby="t-depots">
+      <h3 id="t-depots">Derniers dépôts</h3>
+      {% if derniers_depots %}
+      <ul class="chrono mt-4">
+        {% for d in derniers_depots %}
+        <li class="{% if d.resultat == 'REJETE' %}chrono--attention{% else %}chrono--fait{% endif %}">
+          <time>{{ d.cree_le|date_heure }}</time>
+          <a href="{% url 'portail:rapport' d.id %}">{{ d.mois|mois_titre }}</a> · <span class="badge {{ d.resultat|badge_statut }}">{{ d.resultat|libelle_statut }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}<p class="discret mt-2">Aucun dépôt pour l'instant.</p>{% endif %}
+    </section>
+  </aside>
+</div>
+{% endblock %}

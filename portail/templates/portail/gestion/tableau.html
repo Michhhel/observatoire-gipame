@@ -1,0 +1,41 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Suivi des dépôts{% endblock %}
+{% block contenu %}
+<div class="page__tete"><div><h1>Suivi des dépôts</h1><p>Qui a déclaré, qui est attendu. Statuts et dates seulement : aucune quantité n'est visible ici.</p></div></div>
+
+<div class="grille grille--4 mb-6">
+  <div class="carte kpi"><span class="kpi__libelle">{{ mois_cle|mois_titre }} · attendus</span><span class="kpi__valeur">{{ nb_attendus }}</span><span class="kpi__detail">membres déclarants</span></div>
+  <div class="carte kpi carte--succes"><span class="kpi__libelle">Reçus</span><span class="kpi__valeur">{{ nb_recus }}</span><span class="kpi__detail">déclarations soumises</span></div>
+  <div class="carte kpi {% if nb_retard %}carte--alerte{% endif %}"><span class="kpi__libelle">En retard</span><span class="kpi__valeur">{{ nb_retard }}</span><span class="kpi__detail">{% if date_limite %}limite : {{ date_limite|date_courte }}{% endif %}</span></div>
+  <div class="carte kpi"><span class="kpi__libelle">Produits proposés</span><span class="kpi__valeur">{{ nb_propositions }}</span><span class="kpi__detail"><a href="{% url 'portail:gestion_propositions' %}">à valider</a></span></div>
+</div>
+
+<section class="carte {% if nb_retard %}carte--alerte{% endif %} mb-6" aria-labelledby="t-rappels">
+  <div class="ligne espace">
+    <div><h2 id="t-rappels" style="margin:0">Rappels {{ mois_cle|de_mois }}</h2>
+      <p class="petit discret" style="margin:var(--e-1) 0 0">Un courriel personnel à chaque déclarant des membres qui n'ont pas encore soumis : il ne parle que de sa société, sans aucun chiffre.
+      {% if dernier_rappel %}Dernier envoi : {{ dernier_rappel|date_heure }}.{% else %}Aucun rappel envoyé pour ce mois.{% endif %}</p></div>
+    <form method="post" action="{% url 'portail:gestion_rappels' %}">{% csrf_token %}
+      <input type="hidden" name="mois" value="{{ mois_cle|date:'Y-m' }}">
+      <button class="btn {% if nb_retard %}btn--primaire{% else %}btn--secondaire{% endif %}" type="submit" {% if nb_attendus == nb_recus %}disabled{% endif %}>Envoyer les rappels</button>
+    </form>
+  </div>
+</section>
+
+<section class="carte" style="padding:0" aria-labelledby="t-grille">
+  <div class="carte__tete" style="padding:var(--e-5) var(--e-6) 0"><h2 id="t-grille">Membres × mois</h2></div>
+  <div class="tableau-conteneur" style="border:none">
+    <table class="tableau tableau--dense">
+      <thead><tr><th class="fige">Membre</th>{% for m in mois %}<th>{{ m|mois_court }}</th>{% endfor %}</tr></thead>
+      <tbody>
+      {% for cle, lignes in par_membre %}
+        <tr><td class="fige"><strong>{{ cle.0 }}</strong><div class="petit">{{ noms|cle:cle.1 }}</div></td>
+        {% for m in mois %}{% with l=lignes|cle:m %}
+          <td>{% if l is None %}<span class="discret">—</span>{% elif l.statut_depot == "SOUMISE" %}<span class="badge badge--soumise" title="v{{ l.version }} · {{ l.soumise_le|date_heure }}">Reçue</span>{% elif l.en_retard %}<span class="badge badge--retard">Retard</span>{% else %}<span class="badge badge--neutre">Attendue</span>{% endif %}</td>
+        {% endwith %}{% endfor %}</tr>
+      {% empty %}<tr><td colspan="8" class="vide">Aucun membre déclarant sur la période.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

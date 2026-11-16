@@ -1,0 +1,123 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Contrôle du fichier · {{ mois|mois_long }}{% endblock %}
+{% block contenu %}
+<div class="page__tete">
+  <div>
+    <span class="kpi__libelle">Déclaration {{ mois|de_mois }}{% if depot %} · fichier « {{ depot.nom_fichier }} »{% endif %}</span>
+    {% if resultat == "REJETE" %}
+      <h1>Le fichier n'a pas pu être accepté</h1><p>{{ erreurs|length }} point{{ erreurs|length|pluralize }} à corriger, puis déposez-le à nouveau. Rien n'a été enregistré.</p>
+    {% elif resultat == "ACCEPTE_AVEC_ALERTES" %}
+      <h1>Fichier accepté, {{ alertes|length }} point{{ alertes|length|pluralize }} à vérifier</h1><p>Vos quantités sont enregistrées en brouillon. Relisez les points ci-dessous, puis validez.</p>
+    {% else %}
+      <h1>Fichier accepté</h1><p>Aucune anomalie détectée. Il ne reste qu'à valider.</p>
+    {% endif %}
+  </div>
+  <span class="badge {{ resultat|badge_statut }}" style="font-size:var(--t-13)">{{ resultat|libelle_statut }}</span>
+</div>
+
+<ol class="etapes" aria-label="Les trois étapes">
+  <li class="etape etape--faite"><strong>Télécharger</strong>Fait.</li>
+  <li class="etape etape--faite"><strong>Remplir dans Excel</strong>Fait.</li>
+  <li class="etape etape--active"><strong>Déposer</strong>{% if resultat == "REJETE" %}À corriger.{% else %}Relire, attester, valider.{% endif %}</li>
+</ol>
+
+<div class="grille grille--principale">
+  <div class="empile">
+    {% if declaration %}
+    <section class="carte" aria-label="Résumé du fichier">
+      <div class="resume-depot">
+        <div class="kpi"><span class="kpi__libelle">Produits dans le fichier</span><span class="kpi__valeur">{{ nb_lignes|nombre }}</span></div>
+        <div class="kpi"><span class="kpi__libelle">Véhicules déclarés</span><span class="kpi__valeur">{{ total|nombre }}</span><span class="kpi__detail">{{ mois|mois_long }}</span></div>
+        <div class="kpi"><span class="kpi__libelle">Version</span><span class="kpi__valeur">{{ declaration.version }}</span><span class="kpi__detail">{% if situation.correction %}correction{% else %}première déclaration{% endif %}</span></div>
+      </div>
+    </section>
+    {% endif %}
+
+    {% if erreurs %}
+    <section class="carte" aria-labelledby="t-erreurs">
+      <div class="carte__tete"><h2 id="t-erreurs">À corriger dans le fichier</h2></div>
+      <ol class="rapport">
+        {% for e in erreurs %}
+        <li class="rapport__item rapport__item--erreur">
+          <span class="rapport__icone" aria-hidden="true">!</span>
+          <div>
+            <div class="rapport__quoi">{{ e.quoi }}</div>
+            {% if e.ou %}<div class="rapport__ou">Où : <code>{{ e.ou }}</code></div>{% endif %}
+            {% if e.detail %}<div class="rapport__ou">{{ e.detail }}</div>{% endif %}
+            <div class="rapport__comment"><strong>Comment corriger :</strong> {{ e.comment }}</div>
+          </div>
+        </li>
+        {% endfor %}
+      </ol>
+      <div class="carte__pied actions">
+        <a class="btn btn--primaire btn--large" href="{% url 'portail:assistant' %}?mois={{ mois|date:'Y-m' }}"><svg><use href="#i-deposer"/></svg> Déposer le fichier corrigé</a>
+        <a class="btn btn--discret" href="{% url 'portail:gabarit' %}?mois={{ mois|date:'Y-m' }}">Retélécharger le gabarit</a>
+      </div>
+    </section>
+    {% endif %}
+
+    {% if alertes %}
+    <section class="carte" aria-labelledby="t-alertes">
+      <div class="carte__tete"><h2 id="t-alertes">À vérifier{% if not erreurs %} avant de valider{% endif %}</h2><span class="badge badge--alerte">{{ alertes|length }}</span></div>
+      <p class="petit">Ces points n'empêchent pas la déclaration : ils signalent ce qui sort de l'ordinaire. Si tout est exact, un mot d'explication suffit.</p>
+      <ol class="rapport">
+        {% for a in alertes %}
+        <li class="rapport__item rapport__item--alerte">
+          <span class="rapport__icone" aria-hidden="true">?</span>
+          <div>
+            <div class="rapport__quoi">{{ a.quoi }}</div>
+            {% if a.ou %}<div class="rapport__ou">Où : <code>{{ a.ou }}</code></div>{% endif %}
+            {% if a.detail %}<div class="rapport__ou">{{ a.detail }}</div>{% endif %}
+            <div class="rapport__comment">{{ a.comment }}</div>
+          </div>
+        </li>
+        {% endfor %}
+      </ol>
+    </section>
+    {% endif %}
+
+    {% if formulaire %}
+    <section class="carte carte--accent" aria-labelledby="t-valider">
+      <div class="carte__tete"><h2 id="t-valider">Valider la déclaration</h2></div>
+      <form method="post" action="{% url 'portail:soumettre' declaration.id %}" novalidate>{% csrf_token %}
+        {% if formulaire.non_field_errors %}<div class="message message--erreur mb-4"><svg class="icone"><use href="#i-erreur"/></svg><p>{{ formulaire.non_field_errors.0 }}</p></div>{% endif %}
+        {% if formulaire.motif %}
+        <div class="champ {% if formulaire.motif.errors %}champ--erreur{% endif %}">
+          <label for="{{ formulaire.motif.id_for_label }}">{{ formulaire.motif.label }} <span class="discret">(obligatoire pour une correction)</span></label>
+          {{ formulaire.motif }}{% for e in formulaire.motif.errors %}<span class="champ__erreur">{{ e }}</span>{% endfor %}
+        </div>
+        {% endif %}
+        {% if a_commenter or alertes %}
+        <div class="champ">
+          <label for="{{ formulaire.commentaire.id_for_label }}">{{ formulaire.commentaire.label }}</label>
+          {{ formulaire.commentaire }}
+          <span class="champ__aide">Lu uniquement par le contrôle du GIPAME, jamais publié.</span>
+        </div>
+        {% else %}<div hidden>{{ formulaire.commentaire }}</div>{% endif %}
+        <label class="case {% if formulaire.attestation.errors %}champ--erreur{% endif %}">
+          {{ formulaire.attestation }}
+          <span><strong>{{ formulaire.attestation.label }}</strong><span class="petit">Vous pourrez la corriger plus tard : chaque version est conservée.</span>
+          {% for e in formulaire.attestation.errors %}<span class="champ__erreur">{{ e }}</span>{% endfor %}</span>
+        </label>
+        <div class="actions mt-4">
+          <button class="btn btn--primaire btn--large" type="submit">Soumettre ma déclaration <svg><use href="#i-ok"/></svg></button>
+          <a class="btn btn--discret" href="{% url 'portail:assistant' %}?mois={{ mois|date:'Y-m' }}">Déposer un autre fichier</a>
+        </div>
+      </form>
+    </section>
+    {% endif %}
+  </div>
+
+  <aside class="empile">
+    <section class="carte">
+      <h3>Comment lire ce rapport</h3>
+      <p class="petit mt-2"><strong style="color:var(--erreur-700)">À corriger</strong> : le fichier ne peut pas être accepté en l'état ; on vous indique où et quoi changer.<br>
+      <strong style="color:var(--alerte-700)">À vérifier</strong> : accepté, mais inhabituel ; une explication facultative évite une question du GIPAME plus tard.</p>
+    </section>
+    <section class="carte">
+      <h3>Confidentialité</h3>
+      <p class="petit mt-2">Ce rapport n'est visible que de votre société. Le GIPAME ne voit que « fichier reçu » ou « fichier refusé », jamais les quantités.</p>
+    </section>
+  </aside>
+</div>
+{% endblock %}

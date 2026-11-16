@@ -1,0 +1,78 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Galerie des composants{% endblock %}
+{% block contenu %}
+<div class="page__tete"><div><h1>Galerie des composants</h1><p>Guide de style vivant (visible en développement seulement). Tout vient de <code>tokens.css</code> et <code>base.css</code>.</p></div></div>
+
+<section class="carte mb-6"><h2>Couleurs</h2>
+  <div class="grille grille--4 mt-4">
+    <div><div style="height:56px;border-radius:8px;background:var(--nuit-900)"></div><span class="petit">--nuit-900 · titres, nav, bouton principal</span></div>
+    <div><div style="height:56px;border-radius:8px;background:var(--petrole-600)"></div><span class="petit">--petrole-600 · liens, actif, graphiques</span></div>
+    <div><div style="height:56px;border-radius:8px;background:var(--succes-600)"></div><span class="petit">--succes-600 · reçu, soumis</span></div>
+    <div><div style="height:56px;border-radius:8px;background:var(--alerte-600)"></div><span class="petit">--alerte-600 · à vérifier</span></div>
+    <div><div style="height:56px;border-radius:8px;background:var(--erreur-600)"></div><span class="petit">--erreur-600 · bloquant seulement</span></div>
+    <div><div style="height:56px;border-radius:8px;background:var(--petrole-100)"></div><span class="petit">--petrole-100 · fonds d'information</span></div>
+    <div><div style="height:56px;border-radius:8px;background:var(--surface-2);border:1px solid var(--bord)"></div><span class="petit">--surface-2 / --bord</span></div>
+    <div><div style="height:56px;border-radius:8px;background:var(--fond);border:1px solid var(--bord)"></div><span class="petit">--fond · fond de page</span></div>
+  </div>
+</section>
+
+<section class="carte mb-6"><h2>Typographie</h2>
+  <h1 class="mt-4">Titre de page (28)</h1><h2>Titre de section (22)</h2><h3>Titre de carte (18)</h3>
+  <p class="mt-2">Texte courant (16) — Inter, interligne 1,5. <a href="#">Un lien</a>, <strong>du gras</strong>, <span class="chiffre">12 345</span> en chiffres tabulaires.</p>
+  <p class="petit">Texte secondaire (13) pour les détails et les aides.</p>
+</section>
+
+<section class="carte mb-6"><h2>Boutons</h2>
+  <div class="actions mt-4"><button class="btn btn--primaire">Primaire</button><button class="btn btn--accent">Accent</button><button class="btn btn--secondaire">Secondaire</button><button class="btn btn--discret">Discret</button><button class="btn btn--danger">Danger</button><button class="btn btn--primaire" disabled>Désactivé</button></div>
+  <div class="actions mt-4"><button class="btn btn--primaire btn--large">Grand appel à l'action <svg><use href="#i-fleche"/></svg></button><button class="btn btn--secondaire btn--petit">Petit</button></div>
+</section>
+
+<section class="carte mb-6"><h2>Badges et tendances</h2>
+  <div class="actions mt-4"><span class="badge badge--brouillon">Brouillon</span><span class="badge badge--soumise">Soumise</span><span class="badge badge--remplacee">Remplacée</span><span class="badge badge--retard">Attendue</span><span class="badge badge--rejete">Refusé</span><span class="badge badge--attente">En attente</span><span class="badge badge--provisoire">Provisoire</span><span class="badge badge--definitive">Définitive</span><span class="tendance tendance--hausse">+12,5 %</span><span class="tendance tendance--baisse">−4,0 %</span></div>
+</section>
+
+<section class="carte mb-6"><h2>Messages</h2>
+  <div class="empile mt-4">
+    <div class="message message--info"><svg class="icone"><use href="#i-info"/></svg><p>Information : un brouillon existe déjà pour ce mois.</p></div>
+    <div class="message message--succes"><svg class="icone"><use href="#i-ok"/></svg><p>Déclaration reçue, merci.</p></div>
+    <div class="message message--alerte"><svg class="icone"><use href="#i-alerte"/></svg><p>Deux points à vérifier avant de valider.</p></div>
+    <div class="message message--erreur"><svg class="icone"><use href="#i-erreur"/></svg><p>Le fichier n'a pas pu être accepté.</p></div>
+  </div>
+</section>
+
+<section class="carte mb-6"><h2>Rapport de contrôle</h2>
+  <ol class="rapport mt-4">
+    <li class="rapport__item rapport__item--erreur"><span class="rapport__icone">!</span><div><div class="rapport__quoi">Quantité invalide</div><div class="rapport__ou">Où : <code>Onglet DECLARATION, ligne 14</code></div><div class="rapport__comment"><strong>Comment corriger :</strong> saisissez un nombre entier positif (0 si aucune vente).</div></div></li>
+    <li class="rapport__item rapport__item--alerte"><span class="rapport__icone">?</span><div><div class="rapport__quoi">Variation forte par rapport au mois précédent</div><div class="rapport__ou">Où : <code>Onglet DECLARATION, ligne 9</code></div><div class="rapport__comment">Vérifiez la quantité. Si elle est exacte, un mot d'explication suffit.</div></div></li>
+  </ol>
+</section>
+
+<section class="carte mb-6"><h2>Étapes et dropzone</h2>
+  <ol class="etapes mt-4"><li class="etape etape--faite"><strong>Télécharger</strong>Fait.</li><li class="etape etape--active"><strong>Remplir dans Excel</strong>En cours.</li><li class="etape"><strong>Déposer</strong>À venir.</li></ol>
+  <div class="dropzone" data-dropzone tabindex="0" role="button"><svg><use href="#i-deposer"/></svg><strong>Glissez votre fichier ici, ou cliquez pour le choisir</strong><span class="petit">Format Excel (.xlsx)</span><span class="dropzone__fichier" data-nom-fichier></span><input type="file" accept=".xlsx"></div>
+</section>
+
+<section class="carte mb-6"><h2>Formulaire</h2>
+  <div class="grille grille--2 mt-4">
+    <div class="champ"><label for="g1">Adresse e-mail</label><input id="g1" type="email" class="entree" placeholder="prenom.nom@societe.ci"><span class="champ__aide">Votre identifiant.</span></div>
+    <div class="champ champ--erreur"><label for="g2">Mot de passe</label><input id="g2" type="password" class="entree"><span class="champ__erreur">Mot de passe incorrect.</span></div>
+  </div>
+  <label class="case"><input type="checkbox" checked><span><strong>Je certifie que cette déclaration est complète et exacte.</strong><span class="petit">Chaque version est conservée.</span></span></label>
+</section>
+
+<section class="carte mb-6"><h2>KPI et tableau</h2>
+  <div class="grille grille--3 mt-4">
+    <div class="kpi"><span class="kpi__libelle">Véhicules en {{ mois|mois_long }}</span><span class="kpi__valeur">1 284</span><span class="kpi__detail"><span class="tendance tendance--hausse">+6,2 %</span> vs mois précédent</span></div>
+    <div class="kpi"><span class="kpi__libelle">Marché publié</span><span class="kpi__valeur kpi__valeur--c">c</span><span class="kpi__detail">confidentiel ce mois-ci</span></div>
+    <div class="kpi"><span class="kpi__libelle">Mois déclarés</span><span class="kpi__valeur">10 / 10</span></div>
+  </div>
+  <div class="tableau-conteneur mt-6"><table class="tableau"><thead><tr><th>Produit</th><th class="num">Oct.</th><th class="num">Nov.</th><th>Statut</th></tr></thead>
+    <tbody><tr><td><strong>HILUX 2.4 D 4X4</strong><div class="petit">Toyota · P-00123</div></td><td class="num chiffre">42</td><td class="num chiffre">38</td><td><span class="badge badge--soumise">Soumise</span></td></tr>
+    <tr><td><strong>SPORTAGE 1.6 T</strong><div class="petit">Kia · P-00456</div></td><td class="num chiffre">17</td><td class="num c">c</td><td><span class="badge badge--brouillon">Brouillon</span></td></tr>
+    <tr class="total"><td>Total</td><td class="num chiffre">59</td><td class="num chiffre">38</td><td></td></tr></tbody></table></div>
+</section>
+
+<section class="carte"><h2>Graphique</h2>
+  <div class="graphique mt-4"><canvas data-graphique='{"type":"line","labels":["janv.","févr.","mars","avr.","mai","juin"],"series":[{"label":"Marché","data":[1200,1350,1280,null,1500,1420]},{"label":"Mes ventes","data":[120,140,135,150,160,155],"options":{"fill":false,"borderDash":[6,4]}}]}'></canvas></div>
+</section>
+{% endblock %}

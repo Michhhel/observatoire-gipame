@@ -1,0 +1,49 @@
+{% extends "portail/base.html" %}{% load fr %}
+{% block titre %}Le marché {{ annee }}{% endblock %}
+{% block contenu %}
+<div class="page__tete">
+  <div><h1>Le marché GIPAME en {{ annee }}</h1><p>Totaux publiés pour l'ensemble des membres, par type de véhicule et par origine.</p></div>
+  <form method="get" class="ligne"><label class="petit" for="annee">Année</label>
+    <select id="annee" name="annee" class="entree" style="width:auto;min-height:40px" onchange="this.form.submit()">{% for a in annees %}<option value="{{ a }}" {% if a == annee %}selected{% endif %}>{{ a }}</option>{% endfor %}</select></form>
+</div>
+
+{% if publications %}
+<div class="grille grille--principale mb-6">
+  <section class="carte" aria-labelledby="t-courbe">
+    <div class="carte__tete"><h2 id="t-courbe">Marché et mes ventes</h2>
+      {% if derniere %}<span class="badge {{ derniere.statut|badge_statut }}">{{ dernier_mois|mois_court }} · {{ derniere.statut|libelle_statut }}</span>{% endif %}</div>
+    <div class="graphique"><canvas data-graphique='{"type":"line","labels":["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."],"series":[{"label":"Marché GIPAME (publié)","data":{{ marche_json }}},{"label":"Mes ventes","data":{{ mes_ventes_json }},"options":{"fill":false,"borderDash":[6,4]}}]}' role="img" aria-label="Courbe du marché publié et de mes ventes"></canvas></div>
+    <p class="petit mt-4">Un point manquant = total non publié ce mois-là (pas encore calculé, ou masqué).</p>
+  </section>
+  <aside class="empile">
+    <section class="carte carte--accent">
+      <h3>Pourquoi des « c » ?</h3>
+      <p class="petit mt-2">Un total n'est publié que si <strong>au moins trois membres indépendants</strong> y contribuent et qu'aucun ne pèse plus de 80 %. Sinon la cellule affiche « c » (confidentiel). La règle protège chacun, y compris vous : personne ne peut déduire vos ventes d'un total.</p>
+    </section>
+    <section class="carte">
+      <h3>Provisoire ou définitive ?</h3>
+      <p class="petit mt-2"><span class="badge badge--provisoire">Provisoire</span> dès les premiers dépôts ; <span class="badge badge--definitive">Définitive</span> après la date limite, quand tous les membres attendus ont déclaré ou ont été relancés.</p>
+    </section>
+  </aside>
+</div>
+
+<section class="carte" style="padding:0" aria-labelledby="t-tableau">
+  <div class="carte__tete" style="padding:var(--e-5) var(--e-6) 0"><h2 id="t-tableau">Totaux publiés</h2></div>
+  <div class="tableau-conteneur" style="border:none">
+    <table class="tableau tableau--dense tableau--mois">
+      <thead><tr><th class="fige">Ligne</th>{% for m in mois_courts %}<th>{{ m }}</th>{% endfor %}</tr></thead>
+      <tbody>
+        {% for l in lignes %}
+        <tr {% if l.dimension == "TOTAL" %}class="total"{% endif %}>
+          <td class="fige">{% if l.dimension == "SEGMENT" %}<span style="padding-left:var(--e-4)">{{ l.libelle }}</span>{% else %}<strong>{{ l.libelle }}</strong>{% if l.dimension == "ORIGINE" %} <span class="petit">· origine</span>{% elif l.dimension == "ENERGIE" %} <span class="petit">· énergie</span>{% endif %}{% endif %}</td>
+          {% for v in l.valeurs %}<td class="chiffre">{% if v is None %}<span class="discret">—</span>{% elif v == "c" %}<span class="bulle"><button type="button" class="c" aria-label="Confidentiel : moins de trois contributeurs ou membre dominant">c</button><span class="bulle__texte" role="tooltip">Confidentiel : moins de trois contributeurs, ou un membre dépasse 80 % du total.</span></span>{% else %}{{ v|nombre }}{% endif %}</td>{% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% else %}
+<div class="carte vide"><svg><use href="#i-vide"/></svg><h2>Aucune publication pour {{ annee }}</h2><p class="mt-2">Les totaux du marché apparaissent dès que le GIPAME calcule la première publication de l'année.</p></div>
+{% endif %}
+{% endblock %}
