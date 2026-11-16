@@ -26,6 +26,9 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'dev-only-ne-pas-utiliser-en-pr
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', '1') == '1'
+# Démonstration publique : base séparée remplie de données fictives, bandeau « démonstration » partout, comptes de
+# démonstration affichés sur la page de connexion. NE JAMAIS activer sur la base réelle.
+MODE_DEMO = os.environ.get('GIPAME_MODE_DEMO', '0') == '1'
 
 ALLOWED_HOSTS = [h for h in os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',') if h]
 if os.environ.get('RENDER_EXTERNAL_HOSTNAME'):  # fourni automatiquement par Render
@@ -71,6 +74,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'portail.demo.contexte',
             ],
         },
     },

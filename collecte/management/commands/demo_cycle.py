@@ -15,8 +15,8 @@ class Command(BaseCommand):
         parser.add_argument("--mois", help="AAAA-MM (par défaut : le mois courant)")
 
     def handle(self, *args, **o):
-        if not settings.DEBUG:  # garde-fou : jamais de données fictives dans la base de production
-            raise CommandError("Refusé : DJANGO_DEBUG=0 (base de production ?). Données fictives réservées au développement.")
+        if not (settings.DEBUG or settings.MODE_DEMO):  # garde-fou : jamais de données fictives dans la base réelle
+            raise CommandError("Refusé : DJANGO_DEBUG=0 et GIPAME_MODE_DEMO≠1 (base réelle ?). Données fictives réservées au développement et à la démonstration.")
         try:
             executer_cycle_demo(mois_depuis_texte(o["mois"]) if o["mois"] else None, o["sortie"], journal=self.stdout.write)
         except RuntimeError as exc:

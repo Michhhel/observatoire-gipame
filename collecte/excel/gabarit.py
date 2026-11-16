@@ -8,7 +8,6 @@ fait à l'import (voir depot.py).
 import calendar
 from dataclasses import dataclass
 from datetime import timedelta
-from io import BytesIO
 
 from django.db import connection, transaction
 from openpyxl import Workbook
@@ -107,9 +106,7 @@ def generer_gabarit(membre, mois):
     codes = [x.code for x in lignes]
     _feuille_listes(wb, energies, boites, marques, codes)
     _feuille_meta(wb, membre, mois, version, correction, codes, max_ajouts)
-    sortie = BytesIO()
-    wb.save(sortie)
-    return sortie.getvalue(), version, len(lignes)
+    return c.en_octets(wb), version, len(lignes)
 
 
 # --------------------------------------------------------------------------- feuilles

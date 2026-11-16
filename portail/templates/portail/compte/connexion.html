@@ -22,4 +22,17 @@
     <span class="discret">Pas de compte ? Contactez le GIPAME.</span>
   </div>
 </form>
+{% if mode_demo %}
+<section class="comptes-demo" aria-labelledby="titre-comptes-demo">
+  <h2 id="titre-comptes-demo">Essayer avec un compte de démonstration</h2>
+  <p class="discret">Choisissez un profil : l'adresse et le mot de passe (<code>{{ mot_de_passe_demo }}</code>) se remplissent, il ne reste qu'à se connecter.</p>
+  <ul>
+    {% for c in comptes_demo %}
+    <li><button type="button" class="compte-demo" data-remplir-email="{{ c.email }}" data-remplir-mdp="{{ mot_de_passe_demo }}">
+      <span class="compte-demo__role">{{ c.role }}</span><span class="compte-demo__detail">{{ c.detail }}</span>
+    </button></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
 {% endblock %}

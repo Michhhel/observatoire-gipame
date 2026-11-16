@@ -54,8 +54,10 @@ def premier_du_mois(decalage=0, ref=None):
     return date(m // 12, m % 12 + 1, 1)
 
 
-def charger_demo():
-    mois_plein, mois_partiel = premier_du_mois(-2), premier_du_mois(-1)
+def charger_demo(recul=0):
+    """recul : décale de N mois en arrière les deux mois déclarés (la démonstration en ligne laisse ainsi
+    le mois dernier entièrement à déclarer pour A1 et B3)."""
+    mois_plein, mois_partiel = premier_du_mois(-2 - recul), premier_du_mois(-1 - recul)
     d = SimpleNamespace(mois_plein=mois_plein, mois_partiel=mois_partiel, membres={}, produits={}, users={})
 
     groupe = GroupeEconomique.objects.create(nom="Groupe Alpha (démo)")
@@ -115,3 +117,44 @@ def charger_demo():
         if membre != "B3":  # B3 n'a pas encore déposé le mois suivant
             declarer(membre, mois_partiel)
     return d
+
+
+SAISON = {1: 1.10, 2: 0.92, 3: 1.00, 4: 0.95, 5: 0.97, 6: 1.05, 7: 0.93, 8: 0.85, 9: 1.00, 10: 1.04, 11: 1.02, 12: 1.18}
+
+
+def enrichir_historique(d, nb_mois=22, graine=2026):
+    """Ajoute jusqu'à nb_mois de déclarations soumises FICTIVES (saisonnalité + tendance) jusqu'au mois dernier, puis
+    calcule les publications : graphiques et tableaux de bord prennent vie pour une démonstration.
+    Le mois dernier reste à déclarer pour A1 et B3, afin qu'un visiteur puisse essayer le parcours complet."""
+    import random
+
+    from django.db import transaction
+
+    from .contexte import en_role
+    from .services import calculer_publication
+
+    hasard = random.Random(graine)
+    dernier = premier_du_mois(-1)
+    mois = [m for m in (premier_du_mois(-1 - k) for k in reversed(range(nb_mois))) if m >= DEBUT]
+    for m in mois:
+        t = (m.year - mois[0].year) * 12 + m.month - mois[0].month
+        for code, ventes in VENTES.items():
+            membre = d.membres[code]
+            if (m == dernier and code in ("A1", "B3")) or Declaration.objects.filter(membre=membre, mois=m).exists():
+                continue
+            with transaction.atomic():
+                decl = Declaration.objects.create(membre=membre, mois=m, version=1)
+                for marque in CONCESSIONS[code]:
+                    for pcode, pm, *_ in PRODUITS:
+                        if pm != marque:
+                            continue
+                        base = ventes.get(pcode, 0)
+                        q = 0 if base == 0 else max(0, round(base * SAISON[m.month] * (0.86 + 0.007 * t) * hasard.uniform(0.88, 1.12)))
+                        LigneVente.objects.create(declaration=decl, produit=d.produits[pcode], quantite=q)
+                decl.attestation_complete = True
+                decl.statut = "SOUMISE"
+                decl.save()
+    for m in mois:
+        with transaction.atomic(), en_role("gipame_calcul"):
+            calculer_publication(m, statut="PROVISOIRE" if m == dernier else "DEFINITIVE")
+    return mois

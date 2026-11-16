@@ -33,7 +33,8 @@
       <div class="carte__tete"><h2 id="t-etape1">1 · Téléchargez votre gabarit</h2></div>
       <p>Le fichier contient la liste de vos produits avec, pour vous aider, les quantités du mois précédent en mémoire. Les cellules grises ne se modifient pas ; vous remplissez la colonne <strong>Quantité</strong>.</p>
       <a class="btn btn--primaire btn--large" href="{% url 'portail:gabarit' %}?mois={{ mois|date:'Y-m' }}"><svg><use href="#i-telecharger"/></svg> Télécharger le gabarit {{ mois|de_mois }}</a>
-      <p class="petit mt-4">Définition retenue : {{ params.definition_vente }}</p>
+      <p class="petit mt-4">À l'ouverture, Excel affiche le fichier en « Mode protégé » (bandeau jaune), comme pour tout fichier téléchargé : cliquez sur <strong>Activer la modification</strong> pour le remplir. Si Excel refuse de l'ouvrir, enregistrez-le d'abord, puis clic droit sur le fichier → <strong>Propriétés</strong> → cochez <strong>Débloquer</strong>.</p>
+      <p class="petit mt-2">Définition retenue : {{ params.definition_vente }}</p>
     </section>
 
     <section class="carte" aria-labelledby="t-etape3">

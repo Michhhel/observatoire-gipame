@@ -1,16 +1,21 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-from collecte.demo import charger_demo
+from collecte.demo import charger_demo, enrichir_historique
 
 
 class Command(BaseCommand):
     help = "Charge des données de démonstration fictives (à n'utiliser que sur une base de développement)."
 
+    def add_arguments(self, parser):
+        parser.add_argument("--historique", type=int, default=22,
+                            help="Nombre de mois de déclarations fictives à ajouter jusqu'au mois dernier (0 : jeu minimal).")
+
     def handle(self, *args, **options):
-        if not settings.DEBUG:  # garde-fou : jamais de données fictives dans la base de production
-            raise CommandError("Refusé : DJANGO_DEBUG=0 (base de production ?). Données fictives réservées au développement.")
-        d = charger_demo()
+        if not (settings.DEBUG or settings.MODE_DEMO):  # garde-fou : jamais de données fictives dans la base réelle
+            raise CommandError("Refusé : DJANGO_DEBUG=0 et GIPAME_MODE_DEMO≠1 (base réelle ?). Données fictives réservées au développement et à la démonstration.")
+        d = charger_demo(recul=1 if options["historique"] else 0)
+        mois = enrichir_historique(d, options["historique"]) if options["historique"] else []
         self.stdout.write(self.style.SUCCESS(
             f"Démo chargée : {len(d.membres)} membres, {len(d.produits)} produits, "
-            f"mois {d.mois_plein:%Y-%m} (complet) et {d.mois_partiel:%Y-%m} (B3 manquant)."))
+            f"{len(mois) or 2} mois de déclarations (le mois dernier reste à déclarer pour A1 et B3)."))

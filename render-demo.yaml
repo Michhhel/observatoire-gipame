@@ -1,0 +1,29 @@
+# Démonstration publique de l'Observatoire GIPAME (Render « Blueprint », chemin : render-demo.yaml).
+# Base Neon DISTINCTE de la future base réelle, remplie de données FICTIVES (seed_demo).
+# Mode démonstration : bandeau « Démonstration » partout, comptes d'essai sur la page de connexion,
+# comptes d'essai protégés. Courriels : aucun envoi (ils s'écrivent dans les journaux de Render).
+# Voir MISE_EN_LIGNE_DEMO.md.
+services:
+  - type: web
+    name: observatoire-gipame-demo
+    runtime: python
+    plan: free            # « starter » (≈ 7 $/mois) supprime la mise en veille après 15 min sans visite
+    region: frankfurt     # même région que la base Neon (aws-eu-central-1)
+    branch: main
+    autoDeploy: true
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: gunicorn config.wsgi:application --workers 2 --timeout 120 --access-logfile -
+    healthCheckPath: /sante/
+    envVars:
+      - key: DJANGO_DEBUG
+        value: "0"
+      - key: GIPAME_MODE_DEMO
+        value: "1"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: GIPAME_CLE_GABARIT
+        generateValue: true
+      - key: GIPAME_DB_URL             # URL Neon de la base de DÉMO, rôle gipame_app (PAS le propriétaire), ?sslmode=require
+        sync: false
+      - key: GIPAME_URL_PUBLIQUE       # ex. https://observatoire-gipame-demo.onrender.com (sans / final)
+        sync: false

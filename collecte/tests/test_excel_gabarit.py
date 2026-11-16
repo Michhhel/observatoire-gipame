@@ -81,3 +81,25 @@ class Gabarit(TestCase):
         Concession.objects.filter(membre=self.d.membres["A3"]).update(date_fin=premier_du_mois(-6))
         wb = load_workbook(io.BytesIO(generer(self.d, "A3", self.mois)))
         self.assertEqual(wb["DECLARATION"].cell(8, 1).value, "TOTAL")
+
+
+class PaquetCommeExcel(TestCase):
+    """Les fichiers générés portent la déclaration XML sur chaque partie, comme ceux écrits par Excel."""
+
+    def test_declaration_xml_et_ordre_du_paquet(self):
+        import io
+        import zipfile
+
+        from openpyxl import Workbook, load_workbook
+
+        from collecte.excel.commun import en_octets
+        wb = Workbook()
+        wb.active["A1"] = "Déclaration d'octobre"
+        contenu = en_octets(wb)
+        z = zipfile.ZipFile(io.BytesIO(contenu))
+        self.assertEqual(z.namelist()[0], "[Content_Types].xml")
+        for nom in z.namelist():
+            if nom.endswith((".xml", ".rels")):
+                self.assertTrue(z.read(nom).startswith(b'<?xml '), nom)
+        self.assertIsNone(z.testzip())
+        self.assertEqual(load_workbook(io.BytesIO(contenu)).active["A1"].value, "Déclaration d'octobre")

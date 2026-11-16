@@ -88,4 +88,17 @@
     s.onload = dessiner;
     document.body.appendChild(s);
   }
+  // Démonstration : un clic sur un profil remplit l'adresse et le mot de passe de la page de connexion.
+  document.querySelectorAll("[data-remplir-email]").forEach(function (bouton) {
+    bouton.addEventListener("click", function () {
+      var email = document.getElementById("id_username"), mdp = document.getElementById("id_password");
+      if (!email || !mdp) return;
+      email.value = bouton.getAttribute("data-remplir-email");
+      mdp.value = bouton.getAttribute("data-remplir-mdp");
+      document.querySelectorAll(".compte-demo.est-choisi").forEach(function (b) { b.classList.remove("est-choisi"); });
+      bouton.classList.add("est-choisi");
+      var envoyer = email.form && email.form.querySelector("button[type=submit]");
+      if (envoyer) envoyer.focus();
+    });
+  });
 })();

@@ -10,6 +10,7 @@ from django.views.decorators.http import require_POST
 from collecte import comptes
 from collecte.models import Membre, Poste, ProfilUtilisateur
 
+from .. import demo
 from ..acces import technique_requis
 
 ROLES = [("MEMBRE", "Membre — déclare et consulte pour sa société"), ("GESTION", "Gestion — secrétariat du GIPAME"),
@@ -79,7 +80,10 @@ def compte(request, compte_id):
     if lien and lien.get("id") != profil.id:
         lien = None
     formulaire = FormulaireModification(request.POST or None, initial={"email": profil.email, "prenom": profil.first_name, "nom": profil.last_name})
-    if request.method == "POST" and formulaire.is_valid():
+    if request.method == "POST" and demo.compte_protege(profil.email or profil.username):
+        formulaire.add_error(None, "Démonstration : les comptes de démonstration ne peuvent pas être modifiés. "
+                                   "Créez un nouveau compte pour essayer la modification.")
+    elif request.method == "POST" and formulaire.is_valid():
         d = formulaire.cleaned_data
         try:
             comptes.modifier(profil.id, d["email"], d["prenom"], d["nom"])
@@ -97,6 +101,10 @@ def compte(request, compte_id):
 def compte_action(request, compte_id):
     profil = get_object_or_404(ProfilUtilisateur, pk=compte_id)
     action = request.POST.get("action")
+    if demo.compte_protege(profil.email or profil.username):
+        messages.error(request, "Démonstration : les comptes de démonstration ne peuvent être ni désactivés ni réinitialisés, "
+                                "pour que chaque visiteur puisse les utiliser. Créez un nouveau compte pour essayer ces actions.")
+        return redirect("portail:admin_compte", compte_id=profil.id)
     try:
         if action == "desactiver":
             comptes.changer_etat(profil.id, False, request.POST.get("motif", ""))

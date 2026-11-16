@@ -10,7 +10,6 @@ a le droit de lire. Les cellules supprimées s'affichent « c » (confidentiel) 
 """
 import calendar
 from datetime import date
-from io import BytesIO
 
 from django.db import connection, transaction
 from openpyxl import Workbook
@@ -30,9 +29,7 @@ DIMENSIONS = [("CATEGORIE", "Catégories"), ("SEGMENT", "Segments"), ("ORIGINE",
 
 
 def _octets(wb):
-    sortie = BytesIO()
-    wb.save(sortie)
-    return sortie.getvalue()
+    return c.en_octets(wb)
 
 
 def _titre(ws, texte, largeur):

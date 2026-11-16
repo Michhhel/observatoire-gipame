@@ -394,9 +394,7 @@ def ecrire_rapprochement(lecture: LectureHistorique):
             wa.cell(r, col).font = c.police()
     for lettre, largeur in {"A": 28, "B": 11, "C": 80, "D": 60}.items():
         wa.column_dimensions[lettre].width = largeur
-    sortie = io.BytesIO()
-    wb.save(sortie)
-    return sortie.getvalue(), nb_a_completer
+    return c.en_octets(wb), nb_a_completer
 
 
 def lire_rapprochement(contenu: bytes):

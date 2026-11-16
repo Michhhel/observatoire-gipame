@@ -15,6 +15,35 @@ from django.conf import settings
 from openpyxl import load_workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 
+DECLARATION_XML = b'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'
+
+
+def en_octets(wb):
+    """Enregistre le classeur et normalise le paquet pour qu'il ressemble au plus près à un fichier écrit par Excel.
+
+    openpyxl omet la déclaration XML en tête des parties ; Excel l'écrit toujours. Certains chemins d'ouverture
+    d'Excel (mode protégé des fichiers téléchargés) sont plus stricts que l'ouverture normale : on ajoute donc la
+    déclaration à chaque partie XML, avec [Content_Types].xml en premier et des entrées compressées classiques.
+    Le contenu (cellules, signature du gabarit) est strictement inchangé.
+    """
+    brut = io.BytesIO()
+    wb.save(brut)
+    source = zipfile.ZipFile(io.BytesIO(brut.getvalue()))
+    noms = source.namelist()
+    noms.sort(key=lambda n: (n != "[Content_Types].xml", n))
+    sortie = io.BytesIO()
+    with zipfile.ZipFile(sortie, "w", zipfile.ZIP_DEFLATED) as cible:
+        for nom in noms:
+            donnees = source.read(nom)
+            if nom.endswith((".xml", ".rels")) and not donnees.lstrip().startswith(b"<?xml"):
+                donnees = DECLARATION_XML + donnees
+            info = zipfile.ZipInfo(nom, date_time=(1980, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.create_system = 0  # « MS-DOS / Windows », comme Excel
+            cible.writestr(info, donnees)
+    return sortie.getvalue()
+
+
 GABARIT_VERSION = "1.0"
 VERSIONS_ACCEPTEES = {"1.0"}
 FORMAT_DECLARATION = "GIPAME-DECLARATION"
