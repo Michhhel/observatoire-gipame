@@ -68,6 +68,7 @@
   </section>
   <section class="formulaire">
     <div class="connexion">
+      <a class="retour-accueil" href="{% url 'portail:racine' %}"><svg aria-hidden="true"><use href="#i-fleche"/></svg>Retour à l'accueil</a>
       <div class="carte">{% block carte %}{% endblock %}</div>
       <div class="connexion__bas">
         <p class="mb-2"><span class="confiance"><svg><use href="#i-cadenas"/></svg> Connexion chiffrée · vos ventes ne sont visibles que de votre société</span></p>

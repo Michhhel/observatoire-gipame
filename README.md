@@ -17,7 +17,7 @@ Prérequis : Python 3.13 et PostgreSQL 16 à 18 (le compte utilisé pour migrer 
 #    CREATE ROLE gipame_dev SUPERUSER LOGIN PASSWORD 'dev';  CREATE DATABASE gipame OWNER gipame_dev;
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py test                        # 182 tests
+python manage.py test                        # 186 tests
 python manage.py seed_demo                   # données fictives (6 membres, 22 mois)
 python manage.py appliquer_droits_techniques
 python manage.py verifier_installation       # doit répondre « Installation conforme »
@@ -43,15 +43,25 @@ ensuite tous les comptes (membres, gestion, bureau) se créent depuis l'écran *
 Sauvegarde complète / export pour analyse locale : `scripts/sauvegarde.ps1` (Windows) ou `scripts/sauvegarde.sh`, puis
 `createdb gipame_local` et `pg_restore --no-owner -d gipame_local <fichier.dump>`.
 
+## Documents
+
+| Fichier | Pour quoi faire |
+|---|---|
+| `README.md` | ce fichier : présentation et démarrage rapide |
+| `GUIDE_DEMARRAGE_ET_RECETTE.md` | installation pas à pas, recette de sécurité, mise en ligne de la version réelle, exploitation, dépannage |
+| `MISE_EN_LIGNE_DEMO.md` | la démonstration publique (Neon + Render, données fictives) et sa remise à zéro |
+| `PLAN_DE_TESTS.md` | tests automatiques, balayage navigateur, scénarios de tests profonds et modèle de retour |
+| `PROJET_GIPAME.md` | document de passation complet (**hors dépôt**, sur le poste de Michel) |
+
 ## Organisation
 
 | Dossier | Contenu |
 |---|---|
 | `collecte/` | modèle de données, SQL de sécurité (`sql/`), fichiers Excel (`excel/`), services, 110 tests |
-| `portail/` | portail web (page de présentation, mode démonstration, vues, gabarits, CSS/JS auto-hébergés), 72 tests dont non-fuite |
+| `portail/` | portail web (page de présentation, mode démonstration, vues, gabarits, CSS/JS auto-hébergés), 76 tests dont non-fuite |
 | `docs/identite/` | logo et charte (générateur `generer_logos.py`) ; `docs/captures/` : rendus vérifiés |
 | `exemples/` | fichiers Excel fictifs produits par `demo_cycle` |
-| `scripts/` | préparation PostgreSQL, essai complet (Linux), sauvegarde complète (`sauvegarde.ps1` / `.sh`), rôles avant restauration (`creer_roles.sql`) |
+| `scripts/` | préparation PostgreSQL, essai complet (Linux), sauvegarde complète (`sauvegarde.ps1` / `.sh`), rôles avant restauration (`creer_roles.sql`), **balayage navigateur** de toutes les pages (`balayage.py`) |
 | `render.yaml`, `render-demo.yaml`, `.github/workflows/` | déploiement Render (réel / démonstration), rappels quotidiens (GitHub Actions) |
 
 ## Règles non négociables

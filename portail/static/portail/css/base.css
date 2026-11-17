@@ -280,13 +280,13 @@ details p { margin: var(--e-2) 0 0 var(--e-4); color: var(--texte-2); }
 
 @media (max-width: 900px) {
   .grille--3, .grille--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .grille--principale { grid-template-columns: 1fr; }
+  .grille--principale { grid-template-columns: minmax(0, 1fr); }
   .resume-depot { grid-template-columns: 1fr; }
 }
 @media (max-width: 680px) {
   h1 { font-size: var(--t-22); }
   .page { padding: var(--e-5) var(--e-3) var(--e-12); }
-  .grille--2, .grille--3, .grille--4 { grid-template-columns: 1fr; }
+  .grille--2, .grille--3, .grille--4 { grid-template-columns: minmax(0, 1fr); }
   .etapes { grid-template-columns: 1fr; }
   .carte { padding: var(--e-4); }
   .entete__compte span { display: none; }
@@ -353,3 +353,35 @@ main#contenu { view-transition-name: contenu; }
 .compte-demo.est-choisi { border-color: #1E5A7C; background: rgba(30, 90, 124, .06); }
 .compte-demo__role { font-weight: 600; min-width: 124px; flex: none; }
 .compte-demo__detail { font-size: 14px; opacity: .8; }
+
+/* ---------------------------------------------------------------- Dialogue de confirmation */
+.dialogue {
+  border: 0; border-radius: 16px; padding: 28px; width: min(440px, calc(100% - 32px));
+  box-shadow: 0 30px 80px -20px rgba(11, 18, 56, .45); color: inherit; background: #fff;
+}
+.dialogue::backdrop { background: rgba(11, 18, 56, .45); backdrop-filter: blur(2px); }
+.dialogue h2 { margin: 0 0 8px; font-size: 20px; }
+.dialogue p { margin: 0 0 22px; color: #47516E; line-height: 1.5; }
+.dialogue__actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+.dialogue[open] { animation: dialogue-entree .18s cubic-bezier(.2, .7, .2, 1); }
+@keyframes dialogue-entree { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+@media (prefers-reduced-motion: reduce) { .dialogue[open] { animation: none; } }
+
+/* ---------------------------------------------------------------- Retour à la présentation (connexion) */
+.retour-accueil {
+  display: inline-flex; align-items: center; gap: 8px; margin-bottom: 18px; font-size: 14px; font-weight: 500;
+  color: inherit; text-decoration: none; padding: 6px 12px 6px 8px; border-radius: 999px; border: 1px solid var(--bordure, #E3E8EF);
+}
+.retour-accueil:hover { border-color: currentColor; }
+.retour-accueil svg { width: 16px; height: 16px; transform: rotate(180deg); }
+
+/* ---------------------------------------------------------------- Téléphone : rien ne déborde (balayage du 17/11/2026) */
+.carte, .grille > *, .empile > * { min-width: 0; }
+.tableau-conteneur { max-width: 100%; }
+@media (max-width: 680px) {
+  .carte { padding: var(--e-5); }
+  .btn--large { white-space: normal; text-align: center; height: auto; padding-top: 10px; padding-bottom: 10px; }
+  .carte__tete { flex-wrap: wrap; gap: var(--e-2); }
+  .carte__tete form, .carte__tete .ligne { flex-wrap: wrap; max-width: 100%; }
+  .carte__tete select, .carte__tete .entree { max-width: 100%; min-width: 0; }
+}

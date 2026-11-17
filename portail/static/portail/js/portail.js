@@ -101,4 +101,22 @@
       if (envoyer) envoyer.focus();
     });
   });
+  // Déconnexion : confirmation (un clic malheureux ne doit pas fermer la session). Sans JavaScript, le bouton
+  // déconnecte directement.
+  var dialogue = document.getElementById("dialogue-deconnexion");
+  document.querySelectorAll("form[data-confirmer-deconnexion]").forEach(function (formulaire) {
+    formulaire.addEventListener("submit", function (ev) {
+      if (!dialogue || typeof dialogue.showModal !== "function" || formulaire.dataset.confirme === "1") return;
+      ev.preventDefault();
+      dialogue.showModal();
+      dialogue.querySelector("[data-annuler]").focus();
+      dialogue.querySelector("[data-annuler]").onclick = function () { dialogue.close(); };
+      dialogue.querySelector("[data-confirmer]").onclick = function () {
+        formulaire.dataset.confirme = "1";
+        dialogue.close();
+        formulaire.submit();
+      };
+    });
+  });
+  if (dialogue) dialogue.addEventListener("click", function (ev) { if (ev.target === dialogue) dialogue.close(); });
 })();

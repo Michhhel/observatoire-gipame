@@ -46,3 +46,6 @@ desktop.ini
 
 # Dossiers de travail de l'assistant
 Claude outputs/
+
+# Rapports du balayage navigateur (scripts/balayage.py)
+balayage/

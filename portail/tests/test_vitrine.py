@@ -50,3 +50,14 @@ class VitrineEtComptes(TestPortail):
 
     def test_la_page_de_connexion_ramene_a_la_presentation(self):
         self.assertContains(self.client.get("/connexion/"), "Découvrir l'observatoire")
+
+
+class NavigationSure(TestPortail):
+    def test_la_connexion_propose_le_retour_a_l_accueil(self):
+        self.assertContains(self.client.get("/connexion/"), 'class="retour-accueil" href="/"')
+
+    def test_la_deconnexion_demande_confirmation(self):
+        self.connecter("user_a1")
+        r = self.client.get("/accueil/")
+        self.assertContains(r, "data-confirmer-deconnexion")
+        self.assertContains(r, 'id="dialogue-deconnexion"')
