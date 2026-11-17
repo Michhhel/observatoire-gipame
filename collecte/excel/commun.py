@@ -23,7 +23,8 @@ def en_octets(wb):
 
     openpyxl omet la déclaration XML en tête des parties ; Excel l'écrit toujours. Certains chemins d'ouverture
     d'Excel (mode protégé des fichiers téléchargés) sont plus stricts que l'ouverture normale : on ajoute donc la
-    déclaration à chaque partie XML, avec [Content_Types].xml en premier et des entrées compressées classiques.
+    déclaration à chaque partie XML, avec [Content_Types].xml en premier, des entrées compressées classiques et des
+    attributs de fichier cohérents (voir plus bas : c'était la cause des gabarits qu'Excel refusait d'ouvrir).
     Le contenu (cellules, signature du gabarit) est strictement inchangé.
     """
     brut = io.BytesIO()
@@ -31,15 +32,22 @@ def en_octets(wb):
     source = zipfile.ZipFile(io.BytesIO(brut.getvalue()))
     noms = source.namelist()
     noms.sort(key=lambda n: (n != "[Content_Types].xml", n))
+    import time
+    horodatage = time.localtime(time.time())[:6]
     sortie = io.BytesIO()
     with zipfile.ZipFile(sortie, "w", zipfile.ZIP_DEFLATED) as cible:
         for nom in noms:
             donnees = source.read(nom)
             if nom.endswith((".xml", ".rels")) and not donnees.lstrip().startswith(b"<?xml"):
                 donnees = DECLARATION_XML + donnees
-            info = zipfile.ZipInfo(nom, date_time=(1980, 1, 1, 0, 0, 0))
+            info = zipfile.ZipInfo(nom, date_time=horodatage)
             info.compress_type = zipfile.ZIP_DEFLATED
-            info.create_system = 0  # « MS-DOS / Windows », comme Excel
+            # Attributs cohérents entre eux. Sous Windows, Python marque les entrées « MS-DOS » (create_system=0) tout en
+            # y laissant des droits Unix (0o600 << 16) : Excel juge alors le paquet invalide (« validation et réparation
+            # de niveau fichier ») et refuse de l'ouvrir. On écrit donc toujours des entrées « Unix » avec droits Unix,
+            # combinaison vérifiée à l'ouverture dans Excel (16-17/11/2026).
+            info.create_system = 3
+            info.external_attr = 0o600 << 16
             cible.writestr(info, donnees)
     return sortie.getvalue()
 

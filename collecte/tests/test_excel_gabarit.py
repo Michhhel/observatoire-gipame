@@ -102,4 +102,7 @@ class PaquetCommeExcel(TestCase):
             if nom.endswith((".xml", ".rels")):
                 self.assertTrue(z.read(nom).startswith(b'<?xml '), nom)
         self.assertIsNone(z.testzip())
+        for info in z.infolist():  # jamais « MS-DOS » avec des droits Unix : Excel refuse alors le fichier
+            self.assertEqual(info.create_system, 3, info.filename)
+            self.assertEqual(info.external_attr, 0o600 << 16, info.filename)
         self.assertEqual(load_workbook(io.BytesIO(contenu)).active["A1"].value, "Déclaration d'octobre")
