@@ -30,7 +30,7 @@ git push
 ## 2. Créer la base de démonstration (Neon)
 
 1. Neon → **New project** : nom `observatoire-gipame-demo`, **Postgres 16**, région **AWS Europe Central 1 (Frankfurt)**.
-2. **Connect** → base `neondb`, rôle `neondb_owner`, **« Connection pooling » désactivé** → copier l'adresse.
+2. **Connect** → branche `production`, base `neondb`, rôle `neondb_owner`, **« Connection pooling » désactivé** → copier l'adresse.
    C'est l'**adresse propriétaire de la démo** : gestionnaire de mots de passe uniquement (ni Render, ni GitHub).
 3. Sur votre poste, PowerShell, environnement activé (`D:\GIPAME\venv_gipame\Scripts\Activate.ps1`) :
 
@@ -61,10 +61,11 @@ La dernière ligne affiche l'**adresse application**. Rangez-la dans le gestionn
 
 Si `psql` n'est pas reconnu : `$env:Path += ";C:\Program Files\PostgreSQL\18\bin"`.
 
-4. **Point de remise à zéro.** Neon → **Branches** → **Create branch** : nom `demo`, à partir de `main` (état actuel).
+4. **Point de remise à zéro.** Neon → **Branches** → **Create branch** : nom `demo`, **Auto-delete : Never**, parent
+   `production` (la branche principale, parfois appelée `main`), option « Branch data and schema ».
    Ouvrez la branche `demo` → **Connect** → recopiez l'adresse, puis remplacez-y le rôle et le mot de passe comme
    ci-dessus (`gipame_app` et `$mdp`). **C'est cette adresse (branche `demo`) que Render utilisera.**
-   La branche `main` reste intacte : elle sert de modèle propre.
+   La branche `production` reste intacte : elle sert de modèle propre.
 
 ## 3. Mettre l'application en ligne (Render)
 
