@@ -7,7 +7,10 @@
 > l'outil est prêt à être proposé plus largement.
 > **Ce qu'il ne couvre pas** : l'architecture et les décisions (voir `PROJET_GIPAME.md`).
 >
-> Version du 12/11/2026 · 169 tests automatiques · Python 3.13 · PostgreSQL 16 · Django 6.1.
+> Version du 17/11/2026 · 182 tests automatiques · Python 3.13 · PostgreSQL 16 (Neon) / 16 à 18 en local · Django 6.1.
+>
+> **Démonstration publique (données fictives)** : `https://observatoire-gipame-demo.onrender.com`, mise en ligne
+> le 17/11/2026 selon `MISE_EN_LIGNE_DEMO.md`. Ce guide-ci concerne la **version réelle**.
 
 **Comment lire les tests.** Chaque test indique ce qu'on fait, ce qu'on doit obtenir, et ce que vaut un échec :
 - 🔴 **Bloquant** : on ne va pas plus loin tant que ce n'est pas corrigé (risque de fuite de données ou de perte).
@@ -42,16 +45,20 @@ Cochez au fur et à mesure (`[x]`) et gardez ce fichier rempli : c'est votre **p
 
 | Logiciel | Où | Remarque |
 |---|---|---|
-| Python **3.13** | python.org → Downloads | cocher « Add python.exe to PATH » |
-| PostgreSQL **16** | enterprisedb.com → PostgreSQL 16 (Windows) | noter le mot de passe de `postgres` ; ajouter `C:\Program Files\PostgreSQL\16\bin` au PATH |
+| Python **3.13** | python.org → Downloads → Windows installer (64-bit), dernière 3.13.x | « Customize installation », **sans** « Add python.exe to PATH » : on l'appelle avec `py -3.13` |
+| PostgreSQL **16 à 18** | enterprisedb.com (Windows) | noter le mot de passe de `postgres` ; ajouter `C:\Program Files\PostgreSQL\<version>\bin` au PATH (voir ci-dessous). Les outils 18 fonctionnent avec la base Neon en 16 |
 | Git | git-scm.com | options par défaut |
 | Un gestionnaire de mots de passe | Bitwarden (gratuit) ou KeePassXC | **tous** les secrets de ce guide y vont |
 
-Vérification dans PowerShell :
+Rendre `psql` disponible dans toutes les fenêtres PowerShell (une seule fois ; remplacer 18 par votre version) :
 ```powershell
-py -3.13 --version ; psql --version ; pg_dump --version ; git --version
+[Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path","User") + ";C:\Program Files\PostgreSQL\18\bin", "User")
 ```
-Attendu : Python 3.13.x, psql/pg_dump 16.x, git 2.x.
+Vérification dans une **nouvelle** fenêtre PowerShell :
+```powershell
+py --list ; py -3.13 --version ; psql --version ; pg_dump --version ; git --version
+```
+Attendu : une ligne `-V:3.13` dans la liste, Python 3.13.x, psql/pg_dump 16 à 18, git 2.x.
 
 **Le poste doit être chiffré** (BitLocker activé : Paramètres → Confidentialité et sécurité → Chiffrement de
 l'appareil). Les sauvegardes de la base contiennent toutes les ventes de tous les membres.
@@ -67,24 +74,32 @@ de Michel, plus personne n'a la main sur l'hébergement.
 Toutes les commandes se lancent dans PowerShell, **dans le dossier du projet** (`D:\GIPAME\Application_GIPAME`).
 
 ### 1.1 Environnement Python
+L'environnement virtuel vit **à côté** du code (`D:\GIPAME\venv_gipame`), pas dedans : il ne part ni dans Git ni
+dans les copies du projet.
 ```powershell
-cd D:\GIPAME\Application_GIPAME
+cd D:\GIPAME
 Set-ExecutionPolicy -Scope CurrentUser RemoteSigned      # une fois, pour autoriser l'activation ci-dessous
-py -3.13 -m venv .venv
-.\.venv\Scripts\Activate.ps1                               # le début de ligne affiche (.venv)
+py -3.13 -m venv venv_gipame
+D:\GIPAME\venv_gipame\Scripts\Activate.ps1              # le début de ligne affiche (venv_gipame)
+python -m pip install --upgrade pip
+cd D:\GIPAME\Application_GIPAME
 pip install -r requirements.txt -r requirements-dev.txt
 playwright install chromium                                # seulement pour les captures d'écran
 ```
-À chaque nouvelle fenêtre PowerShell : `cd D:\GIPAME\Application_GIPAME ; .\.venv\Scripts\Activate.ps1`.
+À chaque nouvelle fenêtre PowerShell : `D:\GIPAME\venv_gipame\Scripts\Activate.ps1 ; cd D:\GIPAME\Application_GIPAME`.
+VS Code : « Python: Select Interpreter » → `D:\GIPAME\venv_gipame\Scripts\python.exe`.
 
 ### 1.2 Base de développement (sur votre poste)
+Sans variable `GIPAME_DB_*`, l'application se connecte avec `gipame_dev` / `dev` sur la base `gipame` : ce compte
+doit donc exister (sinon : « authentification par mot de passe échouée pour l'utilisateur gipame_dev »).
+pgAdmin n'est pas nécessaire : `psql` suffit.
 ```powershell
-psql -U postgres -c "CREATE ROLE gipame_dev SUPERUSER LOGIN PASSWORD 'dev'"
-createdb -U postgres -O gipame_dev gipame
+psql -h 127.0.0.1 -U postgres -c "CREATE ROLE gipame_dev SUPERUSER LOGIN PASSWORD 'dev'"
+createdb -h 127.0.0.1 -U postgres -O gipame_dev gipame
 python manage.py migrate
 python manage.py appliquer_droits_techniques
 psql -U gipame_dev -d gipame -c "ALTER ROLE gipame_app LOGIN PASSWORD 'app'"
-python manage.py seed_demo
+python manage.py seed_demo          # 6 membres fictifs, 22 mois de ventes et de publications
 python manage.py comptes_demo
 python manage.py verifier_installation
 ```
@@ -283,8 +298,9 @@ git push -u origin main
 ## 4. Mettre la base en ligne (Neon)
 
 1. Neon → **New project** : nom `observatoire-gipame`, **Postgres version 16**, région **AWS Europe Central 1 (Frankfurt)**.
-2. Bouton **Connect** : choisir la base `neondb`, le rôle `neondb_owner`, **désactiver « Connection pooling »**, copier
-   l'adresse. Elle ressemble à `postgresql://neondb_owner:XXXX@ep-xxxx.eu-central-1.aws.neon.tech/neondb?sslmode=require`.
+2. Bouton **Connect** : choisir la branche principale (Neon l'appelle `production`), la base `neondb`, le rôle
+   `neondb_owner`, **désactiver « Connection pooling »** (l'hôte ne doit pas contenir `-pooler`), **Show password**, copier
+   l'adresse (la fin `&channel_binding=require` est normale). Elle ressemble à `postgresql://neondb_owner:XXXX@ep-xxxx.eu-central-1.aws.neon.tech/neondb?sslmode=require`.
    **C'est l'adresse PROPRIÉTAIRE** : elle va dans le gestionnaire de mots de passe et **nulle part ailleurs**
    (ni Render, ni GitHub, ni un e-mail).
 3. Sur votre poste, fenêtre PowerShell neuve, environnement activé :
@@ -296,8 +312,12 @@ git push -u origin main
    psql "$env:GIPAME_DB_URL" -c "ALTER ROLE gipame_app LOGIN PASSWORD '<mot de passe généré>'"
    python manage.py verifier_installation
    ```
-- [ ] **T33 – 🔴** `verifier_installation` répond « Installation conforme », **sans** la ligne « superutilisateur ».
+- [ ] **T33 – 🔴** `verifier_installation` répond « Installation conforme », **sans** la ligne « superutilisateur »
+  (attendu : « INFO connecté en tant que neondb_owner (non superutilisateur) »).
   (Si la migration échoue sur la création des rôles : le projet Neon n'est pas vierge, en recréer un.)
+   Sécurité de l'affichage : une adresse colle son mot de passe en clair. Ne jamais l'envoyer telle quelle (capture,
+   message, assistant) ; pour la copier sans l'afficher : `... | Set-Clipboard`. Pour lire une adresse sans la montrer à
+   l'écran : `$url = Read-Host "Adresse"`.
 4. Construire l'**adresse de l'application** (même hôte, rôle `gipame_app`) :
    `postgresql://gipame_app:<mot de passe généré>@ep-xxxx.eu-central-1.aws.neon.tech/neondb?sslmode=require`
    → gestionnaire de mots de passe (« URL APPLICATION »).
@@ -486,6 +506,13 @@ puis `git push`) ; renouveler la question ARTCI si l'hébergeur change.
 | Un membre dit voir des chiffres d'un autre | **incident de confidentialité** | désactiver les comptes concernés, prévenir le bureau, ne rien modifier en base, faire une sauvegarde, analyser avec le Journal des accès et `collecte_journalmodification` |
 | Tous les gabarits sont refusés « fichier modifié » | `GIPAME_CLE_GABARIT` a changé | remettre l'ancienne valeur (gestionnaire de mots de passe) |
 | Un membre ne reçoit plus de gabarit avec ses produits | adhésion ou marques closes | Membres → fiche du membre |
+| `psql` n'est pas reconnu | dossier `bin` de PostgreSQL absent du PATH | `$env:Path += ";C:\Program Files\PostgreSQL\18\bin"` (fenêtre en cours) ; durable : §0 |
+| « authentification par mot de passe échouée pour gipame_dev » (tests, `check`) | compte de développement absent ou autre mot de passe | §1.2 : `CREATE ROLE gipame_dev …` ou `ALTER ROLE gipame_dev … PASSWORD 'dev'` |
+| pgAdmin : liste des serveurs vide, « Failed to fetch », « Connection to pgAdmin server has been lost » | le serveur interne de pgAdmin a planté (la base n'est pas touchée) | fermer pgAdmin (Gestionnaire des tâches), relancer ; sinon renommer `%APPDATA%\pgAdmin` ; en attendant, `psql` suffit |
+| Erreur de syntaxe sur un chemin `C:\Users\N'…` | l'apostrophe du nom d'utilisateur Windows ferme la chaîne | mettre les fichiers de travail dans `D:\GIPAME\` (chemin sans apostrophe) |
+| Neon : « permission denied to set role "gipame_calcul" » | le propriétaire Neon n'est pas superutilisateur | seulement pour `seed_demo` (démonstration) : `GRANT gipame_calcul TO neondb_owner`, la commande, puis `REVOKE` ; le portail, lui, calcule via `gipame_app` |
+| Un gabarit téléchargé ne s'ouvre pas dans Excel (« problème dans le contenu », puis échec de la réparation) | mode protégé d'Excel sur un fichier venu d'Internet | clic droit → Propriétés → **Débloquer**, puis rouvrir ; si cela ne suffit pas : envoyer le fichier, le message exact et la version d'Excel |
+| Une fenêtre Windows « Demande d'informations d'identification » s'ouvre | commande mal collée (guillemet perdu) | **Annuler**, ne rien saisir ; recoller la commande en entier |
 | Perte de la base | — | Neon : nouveau projet vierge (§4, étapes 1–2), puis `psql "<adresse propriétaire>" -f scripts/creer_roles.sql`, `pg_restore --no-owner --dbname "<adresse propriétaire>" <dernière sauvegarde>`, `ALTER ROLE gipame_app LOGIN PASSWORD '…'`, `verifier_installation` ; enfin mettre la nouvelle URL APPLICATION dans Render et GitHub |
 
 Pour tout le reste : `PROJET_GIPAME.md` (§13 pièges connus, §14 limites, §6 sécurité).

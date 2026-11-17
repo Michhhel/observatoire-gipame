@@ -5,12 +5,12 @@ gabarits Excel signés, dépôt contrôlé, stockage PostgreSQL sécurisé par r
 avec seuils de confidentialité, portail web.
 
 **Pour installer, mettre en ligne (Neon + Render) et faire la recette : `GUIDE_DEMARRAGE_ET_RECETTE.md`.**
-Ce fichier ne donne que le démarrage rapide. **Démonstration publique (données fictives) : `MISE_EN_LIGNE_DEMO.md`.** Le document de passation complet (`PROJET_GIPAME.md` : contexte,
+Ce fichier ne donne que le démarrage rapide. **Démonstration publique (données fictives) : https://observatoire-gipame-demo.onrender.com — mise en place décrite dans `MISE_EN_LIGNE_DEMO.md`.** Le document de passation complet (`PROJET_GIPAME.md` : contexte,
 décisions, architecture, feuille de route) est tenu **hors du dépôt**, car il cite des constats tirés du fichier réel du client.
 
 ## Démarrage rapide
 
-Prérequis : Python 3.13 et PostgreSQL 16 (le compte utilisé pour migrer doit pouvoir créer des rôles).
+Prérequis : Python 3.13 et PostgreSQL 16 à 18 (le compte utilisé pour migrer doit pouvoir créer des rôles). Sous Windows, l'environnement virtuel se place à côté du code : `py -3.13 -m venv D:\GIPAME\venv_gipame`.
 
 ```bash
 # 1. base de développement (Linux : scripts/dev_postgres.sh ; sinon, dans psql :)
@@ -18,7 +18,7 @@ Prérequis : Python 3.13 et PostgreSQL 16 (le compte utilisé pour migrer doit p
 pip install -r requirements.txt
 python manage.py migrate
 python manage.py test                        # 182 tests
-python manage.py seed_demo                   # données fictives
+python manage.py seed_demo                   # données fictives (6 membres, 22 mois)
 python manage.py appliquer_droits_techniques
 python manage.py verifier_installation       # doit répondre « Installation conforme »
 python manage.py comptes_demo                # mots de passe de démonstration (DEBUG seulement)

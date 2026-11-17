@@ -15,6 +15,10 @@ base, connexion non privilégiée, HTTPS), mais :
 
 Durée : environ 45 minutes la première fois.
 
+**État (17/11/2026) : en ligne** à `https://observatoire-gipame-demo.onrender.com` — projet Neon
+`observatoire-gipame-demo` (PostgreSQL 16, Francfort ; branches `production` = modèle propre et `demo` = base utilisée
+par Render), Blueprint Render `observatoire-gipame-demo` (fichier `render-demo.yaml`, offre Free).
+
 ---
 
 ## 1. Envoyer la dernière version du code sur GitHub
@@ -58,6 +62,10 @@ $env:GIPAME_DB_URL -replace '^postgresql://[^@]+@', "postgresql://gipame_app:$md
 ```
 
 La dernière ligne affiche l'**adresse application**. Rangez-la dans le gestionnaire de mots de passe.
+Pour la copier sans l'afficher : remplacer la dernière ligne par `(... ) | Set-Clipboard`.
+
+Ordre important : changer le mot de passe de `gipame_app` **avant** de créer la branche `demo` (une branche copie les
+rôles et leurs mots de passe au moment de sa création ; ensuite, chaque branche a les siens).
 
 Si `psql` n'est pas reconnu : `$env:Path += ";C:\Program Files\PostgreSQL\18\bin"`.
 
@@ -69,7 +77,8 @@ Si `psql` n'est pas reconnu : `$env:Path += ";C:\Program Files\PostgreSQL\18\bin
 
 ## 3. Mettre l'application en ligne (Render)
 
-1. Render → **New → Blueprint** → choisir le dépôt `observatoire-gipame` → champ **Blueprint Path** : `render-demo.yaml`.
+1. Render (connexion « Sign in with GitHub », accès au dépôt autorisé) → **New → Blueprint** → choisir le dépôt
+   `observatoire-gipame` → nom du Blueprint : `observatoire-gipame-demo` → champ **Blueprint Path** : `render-demo.yaml`.
 2. Renseigner :
 
 | Variable | Valeur |
@@ -87,7 +96,9 @@ générée), `GIPAME_CLE_GABARIT` (valeur générée), `GIPAME_DB_URL`, `GIPAME_
 
 ## 4. Vérifications avant de partager le lien
 
-- [ ] `https://<adresse>/sante/` affiche `ok`.
+- [x] `https://<adresse>/sante/` affiche `ok` (vérifié le 17/11/2026).
+- [x] `https://<adresse>/connexion/` : bandeau « Démonstration » et profils d'essai Membre ×2, Gestion, Bureau,
+      Administration (vérifié le 17/11/2026).
 - [ ] `https://<adresse>/` : page de présentation, pastille « Démonstration » en bas de l'écran, photos des véhicules.
 - [ ] « Accéder au portail » → les comptes d'essai sont proposés ; **Membre (Alpha Motors)** → connexion.
 - [ ] **Déclarer** → télécharger le gabarit du mois dernier → **l'ouvrir dans Excel** depuis le dossier Téléchargements
@@ -125,3 +136,15 @@ Message possible :
   `GIPAME_CLE_GABARIT` ne se change pas une fois des gabarits distribués.
 - **Journaux.** Render → Logs : on y voit les erreurs éventuelles (jamais de quantité) et les courriels de démonstration.
 - **Mises à jour.** Chaque `git push` sur `main` redéploie automatiquement la démonstration (2 à 4 minutes).
+
+## 7. Leçons de la première mise en ligne (17/11/2026)
+
+- **Neon n'a pas de superutilisateur** : `seed_demo` (calcul des publications) exige le droit temporaire
+  `GRANT gipame_calcul TO neondb_owner` … `REVOKE` (intégré à l'étape 2 ; `seed_demo` s'arrête proprement sinon).
+- **La branche principale de Neon s'appelle `production`** ; à la création de la branche `demo`, régler
+  **Auto-delete : Never** (proposé par défaut : « After 1 day »).
+- **`manage.py shell` lisant un texte collé** n'exécute pas une boucle sans ligne vide finale : pour un script,
+  l'écrire dans un fichier de `D:\GIPAME\` et lancer `python manage.py shell -c "exec(open('D:/GIPAME/x.py', encoding='utf-8-sig').read())"`.
+- **Chemin Windows avec apostrophe** (`C:\Users\N'…`) : ne jamais y placer un fichier appelé depuis Python.
+- **Secrets à l'écran** : les mots de passe de la démonstration ont été affichés pendant l'installation et n'ont pas été
+  changés (choix assumé : données fictives). Ne pas réutiliser ce projet Neon ni ces adresses pour la version réelle.
