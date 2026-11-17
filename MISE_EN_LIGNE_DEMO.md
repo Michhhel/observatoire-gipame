@@ -40,9 +40,12 @@ $env:GIPAME_DB_URL    = "<adresse propriétaire de la démo>"
 $env:DJANGO_DEBUG     = "0"
 $env:GIPAME_MODE_DEMO = "1"
 
+$env:Path += ";C:\Program Files\PostgreSQL\18\bin"   # psql, si ce n'est pas déjà fait
 python manage.py migrate
 python manage.py appliquer_droits_techniques
+psql "$env:GIPAME_DB_URL" -c "GRANT gipame_calcul TO neondb_owner"     # Neon : le propriétaire n'est pas superutilisateur
 python manage.py seed_demo            # 6 membres fictifs, 22 mois de ventes, publications
+psql "$env:GIPAME_DB_URL" -c "REVOKE gipame_calcul FROM neondb_owner"  # droit retiré aussitôt
 python manage.py comptes_demo         # comptes <nom>@demo.gipame.ci, mot de passe demo-2026
 
 # mot de passe de la connexion de l'application (gipame_app)
