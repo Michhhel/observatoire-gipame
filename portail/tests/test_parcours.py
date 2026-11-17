@@ -123,3 +123,29 @@ class ParcoursDeclarant(TestPortail):
                                                 "cylindree": produit.cylindree_cm3 or "", "puissance": produit.puissance_fiscale_cv or "",
                                                 "motricite": produit.motricite})
         self.assertContains(r, "existe déjà au catalogue")
+
+
+class FichiersTelechargesIntacts(TestPortail):
+    """Un fichier téléchargé doit être exactement l'archive produite : rien après la fin du zip, sinon Excel le refuse."""
+
+    def _verifier(self, contenu):
+        import io
+        import zipfile
+        fin = contenu.rfind(b"PK\x05\x06")
+        self.assertGreater(fin, 0)
+        self.assertEqual(len(contenu), fin + 22, "octets en trop après la fin de l'archive")
+        self.assertIsNone(zipfile.ZipFile(io.BytesIO(contenu)).testzip())
+
+    def test_gabarit_telecharge(self):
+        self.connecter("user_a1")
+        mois = self.d.mois_partiel
+        r = self.client.get("/declarer/gabarit/", {"mois": mois.strftime("%Y-%m")})
+        self.assertEqual(r.status_code, 200)
+        self._verifier(r.content)
+        self.assertIn(f"declaration_A1_{mois:%Y-%m}_v", r["Content-Disposition"])
+
+    def test_export_mon_annee(self):
+        self.connecter("user_a1")
+        r = self.client.get("/mon-annee/export/")
+        self.assertEqual(r.status_code, 200)
+        self._verifier(r.content)

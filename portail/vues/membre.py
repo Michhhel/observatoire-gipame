@@ -150,8 +150,10 @@ def gabarit(request):
     """Téléchargement du gabarit Excel du mois (étape 1)."""
     membre = membre_courant(request)
     mois = _mois_demande(request)
-    octets = generer_gabarit(membre, mois)
-    version = Declaration.objects.filter(membre=membre, mois=mois).count() + 1
+    # generer_gabarit renvoie (octets, version, nombre de lignes) : seuls les octets partent au navigateur.
+    # (Passer le triplet à HttpResponse ajoutait « version » et « nombre de lignes » en fin de fichier, et Excel
+    # refusait alors le fichier téléchargé : « validation et réparation de niveau fichier ».)
+    octets, version, _ = generer_gabarit(membre, mois)
     nom = f"declaration_{membre.code}_{mois:%Y-%m}_v{version}.xlsx"
     reponse = HttpResponse(octets, content_type=TYPE_XLSX)
     reponse["Content-Disposition"] = f'attachment; filename="{nom}"'
