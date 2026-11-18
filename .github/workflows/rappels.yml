@@ -1,8 +1,14 @@
 # Rappels de dépôt automatiques (gratuit) : chaque jour à 8 h (heure d'Abidjan = UTC), la commande regarde si
 # c'est un jour de rappel (J-3, J+1, J+7 autour de la date limite) et n'envoie rien sinon.
-# Secrets à créer dans GitHub (Settings > Secrets and variables > Actions) : GIPAME_DB_URL (rôle gipame_app),
-# DJANGO_SECRET_KEY, GIPAME_URL_PUBLIQUE, GIPAME_EMAIL_EXPEDITEUR, GIPAME_SMTP_HOTE, GIPAME_SMTP_UTILISATEUR,
-# GIPAME_SMTP_MOT_DE_PASSE. Lancement manuel possible : onglet Actions > Rappels de dépôt > Run workflow.
+#
+# DÉSACTIVÉ tant que la version réelle n'est pas en service : le travail est simplement « ignoré » chaque jour
+# (pas d'échec). Pour l'activer, le jour de la mise en production réelle :
+#   1. GitHub > Settings > Secrets and variables > Actions > onglet « Secrets » : créer GIPAME_DB_URL (rôle gipame_app
+#      de la base RÉELLE), DJANGO_SECRET_KEY, GIPAME_URL_PUBLIQUE, GIPAME_EMAIL_EXPEDITEUR, GIPAME_SMTP_HOTE,
+#      GIPAME_SMTP_UTILISATEUR, GIPAME_SMTP_MOT_DE_PASSE ;
+#   2. même page, onglet « Variables » : créer RAPPELS_ACTIFS = oui.
+# La démonstration n'envoie jamais de rappels (ses courriels ne partent pas).
+# Lancement manuel possible : onglet Actions > Rappels de dépôt > Run workflow.
 name: Rappels de dépôt
 on:
   schedule:
@@ -10,11 +16,12 @@ on:
   workflow_dispatch:
 jobs:
   rappels:
+    if: ${{ vars.RAPPELS_ACTIFS == 'oui' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version-file: .python-version
           cache: pip
