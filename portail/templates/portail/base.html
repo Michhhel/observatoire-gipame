@@ -88,7 +88,7 @@
   <span style="display:block;margin-top:var(--e-2)"><a href="{% url 'portail:aide' %}">Aide</a> · <a href="{% url 'portail:confidentialite' %}">Charte de confidentialité</a></span>
 </footer>
 
-{% if roue.active %}{% include "roue_de_secours/_roue.html" %}{% endif %}
+{% if roue.active and not roue_page %}{% include "roue_de_secours/_roue.html" %}{% endif %}
 
 {% if messages %}
 <div class="messages-flash" role="status" aria-live="polite">

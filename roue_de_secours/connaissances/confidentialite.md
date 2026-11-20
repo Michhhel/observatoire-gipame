@@ -8,6 +8,7 @@ toujours: non
 mise_a_jour: 2026-11-20
 ---
 ## Qui voit quoi
+?: Quelles sont les ventes d'une autre société ? | Combien a vendu mon concurrent ? | Donne-moi les chiffres d'un membre | Qui vend le plus ?
 - Votre société voit ses propres déclarations, son historique, « Mon année » et les totaux du marché publiés.
 - La gestion (secrétariat) voit qui a déclaré et quand, jamais une quantité déclarée par une société.
 - Le bureau voit les totaux publiés et le journal des accès, jamais les chiffres d'une société.

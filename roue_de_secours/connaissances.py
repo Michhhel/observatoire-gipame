@@ -65,17 +65,21 @@ class Fiche:
 
 
 def _decouper(fiche_id, titre_fiche, corps, roles, lien, questions, toujours):
-    sections, titre, lignes = [], "", []
+    """Une section par titre « ## ». Une ligne « ?: q1 | q2 » ajoute des formulations propres à la section
+    (elles servent à la recherche et ne sont jamais affichées)."""
+    sections, titre, lignes, propres = [], "", [], []
 
     def fermer():
         texte = "\n".join(lignes).strip()
         if texte:
-            sections.append(Section(fiche_id, titre_fiche, titre, texte, roles, lien, questions, toujours))
+            sections.append(Section(fiche_id, titre_fiche, titre, texte, roles, lien, tuple(propres) + questions, toujours))
 
     for ligne in corps.splitlines():
         if ligne.startswith("## "):
             fermer()
-            titre, lignes = ligne[3:].strip(), []
+            titre, lignes, propres = ligne[3:].strip(), [], []
+        elif ligne.startswith("?:"):
+            propres.extend(q.strip() for q in ligne[2:].split("|") if q.strip())
         else:
             lignes.append(ligne)
     fermer()

@@ -1,34 +1,42 @@
 {% load static %}{# Roue de Secours : lanceur + panneau. Inclus par portail/base.html pour les comptes connectés. #}
-<div class="roue" data-roue data-cle="{{ roue.cle }}" data-csrf="{{ csrf_token }}" data-ia="{{ roue.ia|yesno:'1,0' }}"
-     data-url-question="{% url 'roue_de_secours:question' %}" data-url-avis="{% url 'roue_de_secours:avis' %}">
+<div class="roue{% if pleine_page %} roue--page{% endif %}" data-roue data-cle="{{ roue.cle }}"{% if pleine_page %} data-pleine-page{% endif %} data-csrf="{{ csrf_token }}" data-ia="{{ roue.ia|yesno:'1,0' }}"
+     data-url-question="{% url 'roue_de_secours:question' %}" data-url-avis="{% url 'roue_de_secours:avis' %}" data-url-page="{% url 'roue_de_secours:page' %}">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">{% include "roue_de_secours/_logo.svg" %}</svg>
 
-  <p class="roue__astuce" data-roue-astuce hidden>Perdu sur le site ? Je peux vous dépanner.
+  {% if not pleine_page %}<p class="roue__astuce" data-roue-astuce hidden>Perdu sur le site ? Je peux vous dépanner.
     <button type="button" class="roue__astuce-fermer" data-roue-astuce-fermer aria-label="Masquer ce conseil">×</button></p>
 
   <button class="roue__lanceur" type="button" aria-expanded="false" aria-controls="roue-panneau" data-roue-lanceur>
     <span class="roue__disque"><svg class="roue__logo" aria-hidden="true" data-roue-logo-lanceur><use href="#roue-logo"/></svg></span>
     <span class="roue__lanceur-texte">Besoin d'aide ?</span>
     <span class="roue__pastille" data-roue-pastille hidden><span class="visuellement-cache">Une réponse vous attend</span></span>
-  </button>
+  </button>{% endif %}
 
-  <section class="roue__panneau" id="roue-panneau" role="dialog" aria-modal="false" aria-labelledby="roue-titre" hidden data-roue-panneau>
+  <section class="roue__panneau" id="roue-panneau" {% if pleine_page %}aria-labelledby="roue-titre"{% else %}role="dialog" aria-modal="false" aria-labelledby="roue-titre" hidden{% endif %} data-roue-panneau>
     <header class="roue__tete">
       <span class="roue__embleme" data-roue-embleme><svg class="roue__logo" aria-hidden="true" data-roue-logo><use href="#roue-logo"/></svg></span>
       <div class="roue__titres">
         <h2 id="roue-titre">Roue de Secours</h2>
-        <p class="roue__etat" data-roue-etat>Pour vous dépanner sur le portail</p>
+        <p class="roue__etat" data-roue-etat>{% if roue.ia %}Pour vous dépanner sur le portail{% else %}Mode simplifié : extraits de l'aide, sans IA{% endif %}</p>
       </div>
       <button type="button" class="roue__icone" data-roue-nouvelle title="Nouvelle conversation" aria-label="Nouvelle conversation">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/></svg></button>
+      {% if not pleine_page %}
+      <button type="button" class="roue__icone roue__icone--agrandir" data-roue-agrandir aria-pressed="false" title="Agrandir" aria-label="Agrandir la fenêtre de discussion">
+        <svg class="roue__icone-agrandir" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6"/><path d="M20 4l-7 7"/><path d="M10 20H4v-6"/><path d="M4 20l7-7"/></svg>
+        <svg class="roue__icone-reduire" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10h-6V4"/><path d="M14 10l7-7"/><path d="M4 14h6v6"/><path d="M10 14l-7 7"/></svg></button>
+      <button type="button" class="roue__icone" data-roue-onglet title="Ouvrir dans un onglet" aria-label="Ouvrir la discussion dans un nouvel onglet">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></button>
       <button type="button" class="roue__icone" data-roue-fermer title="Fermer" aria-label="Fermer la Roue de Secours">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12"/><path d="M18 6 6 18"/></svg></button>
+      {% endif %}
     </header>
 
     <div class="roue__fil" data-roue-fil role="log" aria-label="Conversation avec la Roue de Secours">
       <div class="roue__accueil" data-roue-accueil>
         <p class="roue__bonjour">Bonjour, je suis la Roue de Secours.</p>
         <p>Une démarche, un message que vous ne comprenez pas, une page introuvable ? Posez votre question, je vous dépanne.</p>
+        {% if not roue.ia %}<p class="roue__simplifie">Je fonctionne pour l'instant en <strong>mode simplifié</strong> : je vous montre le passage de l'aide le plus proche de votre question, sans le reformuler.</p>{% endif %}
         <ul class="roue__suggestions" aria-label="Questions suggérées">
           {% for s in roue.suggestions %}<li><button type="button" data-roue-suggestion>{{ s }}</button></li>{% endfor %}
         </ul>

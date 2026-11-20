@@ -46,6 +46,10 @@ CAS = [
     ("MEMBRE", "qui dois-je contacter au GIPAME", {"contact"}),
     ("MEMBRE", "c'est quoi l'observatoire, ça sert à quoi", {"observatoire"}),
     ("MEMBRE", "est-ce que tu peux soumettre à ma place", {"roue-de-secours"}),
+    ("MEMBRE", "A quoi tu sers, comme chatbot ?", {"roue-de-secours"}),
+    ("MEMBRE", "Quelles sont les ventes de alpha1", {"confidentialite"}),
+    ("MEMBRE", "Combien Toyota a vendu ce mois ?", {"confidentialite"}),
+    ("MEMBRE", "Comment ajouter un produit qui n'est pas dans mon fichier ?", {"nouveau-produit"}),
     ("BUREAU", "où partent mes questions, tu es une IA ?", {"roue-de-secours"}),
     # --- gestion
     ("GESTION", "qui n'a pas encore déclaré ce mois", {"gestion-depots-rappels"}),

@@ -131,5 +131,18 @@ class Affichage(TestPortail):
         self.assertContains(page, "data-roue-lanceur")
         self.assertContains(page, "Comment remplir le fichier Excel ?")  # suggestion propre à la page
 
+    def test_page_dediee(self):
+        self.assertEqual(self.client.get("/roue-de-secours/").status_code, 302)  # connexion exigée
+        self.connecter("user_a1")
+        page = self.client.get("/roue-de-secours/")
+        self.assertEqual(page.status_code, 200)
+        self.assertContains(page, "data-pleine-page")
+        self.assertNotContains(page, "data-roue-lanceur")  # pas de panneau flottant en double
+        self.assertContains(self.client.get("/accueil/"), "data-roue-agrandir")
+
+    def test_mode_simplifie_annonce(self):
+        self.connecter("user_a1")
+        self.assertContains(self.client.get("/accueil/"), "mode simplifié")
+
     def test_charte_explique_la_roue(self):
         self.assertContains(self.client.get("/confidentialite/"), "La Roue de Secours (assistant d'aide)")

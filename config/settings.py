@@ -208,6 +208,7 @@ ROUE_DE_SECOURS = {
     'CLE_API': os.environ.get('GIPAME_ROUE_CLE_API', ''),
     'URL_API': os.environ.get('GIPAME_ROUE_URL_API', ''),
     'PRESTATAIRE': os.environ.get('GIPAME_ROUE_PRESTATAIRE', ''),  # nom affiché dans la charte de confidentialité
+    'EFFORT': os.environ.get('GIPAME_ROUE_EFFORT', ''),  # niveau de réflexion (Gemini : « low » par défaut)
 }
 
 # Journaux : console (Render les conserve quelques jours). Ne JAMAIS y écrire de quantité (§6.4).

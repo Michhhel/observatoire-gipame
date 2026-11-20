@@ -1,0 +1,6 @@
+{% extends "portail/base.html" %}
+{% block titre %}Roue de Secours{% endblock %}
+{% block classe_page %}page--roue{% endblock %}
+{% block contenu %}
+{% if roue.active %}{% include "roue_de_secours/_roue.html" with pleine_page=True %}{% endif %}
+{% endblock %}

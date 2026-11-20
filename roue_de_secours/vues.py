@@ -1,4 +1,5 @@
-"""Deux points d'entrée JSON, réservés aux comptes connectés :
+"""Une page (la conversation en pleine page) et deux points d'entrée JSON, réservés aux comptes connectés :
+GET  /roue-de-secours/            → conversation en pleine page
 POST /roue-de-secours/question/  → réponse diffusée (lignes JSON, voir conversation.py)
 POST /roue-de-secours/avis/      → enregistre un avis anonyme (Utile / À revoir / question sans réponse)
 
@@ -9,7 +10,9 @@ import json
 
 from django.core.cache import cache
 from django.db import connection
+from django.contrib.auth.decorators import login_required
 from django.http import Http404, JsonResponse, StreamingHttpResponse
+from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
@@ -57,6 +60,15 @@ def _historique(brut):
         if isinstance(m, dict) and m.get("role") in {"user", "assistant"} and isinstance(m.get("texte"), str):
             propre.append({"role": m["role"], "texte": m["texte"][: reglages.HISTORIQUE_TEXTE_MAX]})
     return propre
+
+
+@never_cache
+@login_required
+def page(request):
+    """La conversation en pleine page (bouton « Ouvrir dans un onglet » du panneau)."""
+    if not reglages.active() or request.user.role_metier not in ROLES:
+        raise Http404
+    return render(request, "roue_de_secours/page.html", {"roue_page": True})
 
 
 @never_cache

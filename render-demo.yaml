@@ -31,5 +31,9 @@ services:
       # --- Roue de Secours (assistant d'aide). Sans clé : mode simplifié (extraits des fiches, sans IA). Voir ROUE_DE_SECOURS.md
       - key: GIPAME_ROUE_CLE_API       # clé du prestataire d'IA (Anthropic par défaut) ; laisser vide = sans IA
         sync: false
-      - key: GIPAME_ROUE_MODELE        # vide = modèle par défaut (claude-haiku-5-5) ; à revoir chaque année
+      - key: GIPAME_ROUE_MODELE        # vide = claude-haiku-5-5 ; sinon le nom du modèle chez le prestataire choisi
+        sync: false
+      - key: GIPAME_ROUE_URL_API       # vide = Anthropic ; DeepSeek : https://api.deepseek.com ; Groq : https://api.groq.com/openai/v1
+        sync: false
+      - key: GIPAME_ROUE_PRESTATAIRE   # nom affiché dans la charte, ex. « DeepSeek (Chine) »
         sync: false

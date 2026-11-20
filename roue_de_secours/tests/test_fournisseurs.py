@@ -46,6 +46,25 @@ class Lecture(SimpleTestCase):
             texte = "".join(f.CompatibleOpenAI("m", "cle", "https://api.exemple.ci/v1").diffuser(REQUETE))
         self.assertEqual(texte, "Salut")
         self.assertTrue(appel.call_args[0][0].full_url.endswith("/v1/chat/completions"))
+        self.assertIn("RoueDeSecours", appel.call_args[0][0].get_header("User-agent"))
+
+    def test_gemini_temperature_par_defaut_reflexion_basse(self):
+        from django.test import override_settings
+        url = "https://generativelanguage.googleapis.com/v1beta/openai/"
+        sse = flux_sse({"choices": [{"delta": {"content": "Bonjour"}}]}, b"[DONE]")
+        with override_settings(ROUE_DE_SECOURS={"URL_API": url, "CLE_API": "cle", "MODELE": "gemini-flash"}), \
+                mock.patch("urllib.request.urlopen", return_value=sse) as appel:
+            from roue_de_secours.fournisseurs import construire
+            p = construire()
+            self.assertIsInstance(p, f.CompatibleOpenAI)
+            self.assertEqual("".join(p.diffuser(REQUETE)), "Bonjour")
+        requete_http = appel.call_args[0][0]
+        corps = json.loads(requete_http.data)
+        self.assertEqual(requete_http.full_url, "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions")
+        self.assertNotIn("temperature", corps)
+        self.assertEqual(corps["reasoning_effort"], "low")
+        self.assertGreaterEqual(corps["max_tokens"], 4096)
+        self.assertEqual(requete_http.get_header("Authorization"), "Bearer cle")
 
     def test_modele_retire_donne_une_erreur_lisible(self):
         erreur = urllib.error.HTTPError("u", 404, "Not Found", {}, io.BytesIO(b'{"error":"model not found"}'))
@@ -94,6 +113,14 @@ class Bascule(SimpleTestCase):
 
         ev = self.evenements(Coupure())
         self.assertEqual([e["t"] for e in ev], ["sources", "texte", "erreur", "fin"])
+
+    def test_hors_ligne_un_seul_passage_et_renvois(self):
+        autre = Section("essai", "Fiche d'essai", "Autre section", "Autre texte.", frozenset({"TOUS"}), "", (), False)
+        prep = Preparation(f.Requete("fixe", "var", [], [PASSAGE, autre], {}), [], False)
+        texte = "".join(json.loads(l).get("d", "") for l in flux(prep, f.HorsLigne()))
+        self.assertIn("Texte de la fiche.", texte)
+        self.assertNotIn("Autre texte.", texte)
+        self.assertIn("« Autre section »", texte)
 
     def test_hors_ligne_sans_passage(self):
         prep = Preparation(f.Requete("fixe", "var", [], [], {"contact": "le secrétariat du GIPAME"}), [], True)

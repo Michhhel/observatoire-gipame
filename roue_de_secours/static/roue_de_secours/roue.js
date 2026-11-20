@@ -18,8 +18,10 @@
   var CLE = racine.getAttribute("data-cle"), CSRF = racine.getAttribute("data-csrf");
   var URL_Q = racine.getAttribute("data-url-question"), URL_A = racine.getAttribute("data-url-avis");
   var IA = racine.getAttribute("data-ia") === "1";
+  var PLEINE_PAGE = racine.hasAttribute("data-pleine-page");
+  var URL_PAGE = racine.getAttribute("data-url-page");
   var MAX = parseInt(champ.getAttribute("maxlength"), 10) || 800;
-  var ETAT_REPOS = "Pour vous dépanner sur le portail";
+  var ETAT_REPOS = IA ? "Pour vous dépanner sur le portail" : "Mode simplifié : extraits de l'aide, sans IA";
 
   var conversation = lire();
   var enCours = null, angle = 0;
@@ -45,7 +47,8 @@
   }
   function rendre(md) {
     var html = "", liste = null, para = [];
-    function fermerPara() { if (para.length) { html += "<p>" + enLigne(para.join("<br>")) + "</p>"; para = []; } }
+    // Markdown standard : un simple retour à la ligne est une espace (les fiches sont coupées à ~120 caractères).
+    function fermerPara() { if (para.length) { html += "<p>" + enLigne(para.join(" ")) + "</p>"; para = []; } }
     function fermerListe() { if (liste) { html += "</" + liste + ">"; liste = null; } }
     echapper(md).split("\n").forEach(function (l) {
       var m;
@@ -53,7 +56,7 @@
       if ((m = l.match(/^\s*[-*•]\s+(.*)$/))) { fermerPara(); if (liste !== "ul") { fermerListe(); html += "<ul>"; liste = "ul"; } html += "<li>" + enLigne(m[1]) + "</li>"; return; }
       if ((m = l.match(/^\s*\d+[.)]\s+(.*)$/))) { fermerPara(); if (liste !== "ol") { fermerListe(); html += "<ol>"; liste = "ol"; } html += "<li>" + enLigne(m[1]) + "</li>"; return; }
       if ((m = l.match(/^#{1,6}\s+(.*)$/))) { fermerPara(); fermerListe(); html += "<p><strong>" + enLigne(m[1]) + "</strong></p>"; return; }
-      if (liste && /^\s{2,}\S/.test(l)) { html = html.replace(/<\/li>$/, "<br>" + enLigne(l.trim()) + "</li>"); return; }
+      if (liste && /^\s{2,}\S/.test(l)) { html = html.replace(/<\/li>$/, " " + enLigne(l.trim()) + "</li>"); return; }
       fermerListe(); para.push(l);
     });
     fermerPara(); fermerListe();
@@ -328,7 +331,7 @@
     sauver();
     etat.textContent = ETAT_REPOS;
     annonce.textContent = enErreur ? "La Roue de Secours n'a pas pu répondre." : "Réponse de la Roue de Secours prête.";
-    if (panneau.hidden) pastille.hidden = false;
+    if (panneau.hidden && pastille) pastille.hidden = false;
     majEnvoi();
     defiler();
   }
@@ -336,6 +339,7 @@
   // ---------------------------------------------------------------- ouverture / fermeture
   function ouvrir() {
     panneau.hidden = false;
+    if (!lanceur) return;
     lanceur.setAttribute("aria-expanded", "true");
     pastille.hidden = true;
     if (astuce) astuce.hidden = true;
@@ -344,13 +348,42 @@
     setTimeout(function () { champ.focus(); }, 60);
   }
   function fermer() {
+    if (PLEINE_PAGE) return;
     panneau.hidden = true;
     lanceur.setAttribute("aria-expanded", "false");
     document.documentElement.classList.remove("roue-ouverte");
     lanceur.focus();
   }
-  lanceur.addEventListener("click", function () { if (panneau.hidden) ouvrir(); else fermer(); });
-  $("[data-roue-fermer]").addEventListener("click", fermer);
+  if (lanceur) lanceur.addEventListener("click", function () { if (panneau.hidden) ouvrir(); else fermer(); });
+  if ($("[data-roue-fermer]")) $("[data-roue-fermer]").addEventListener("click", fermer);
+
+  // Agrandir / réduire (choix gardé dans l'onglet).
+  var agrandir = $("[data-roue-agrandir]");
+  function appliquerTaille(grande) {
+    racine.classList.toggle("roue--grande", grande);
+    if (!agrandir) return;
+    agrandir.setAttribute("aria-pressed", grande ? "true" : "false");
+    agrandir.title = grande ? "Réduire" : "Agrandir";
+    agrandir.setAttribute("aria-label", grande ? "Réduire la fenêtre de discussion" : "Agrandir la fenêtre de discussion");
+  }
+  if (agrandir) {
+    try { appliquerTaille(sessionStorage.getItem("roue-taille") === "grande"); } catch (e) { /* rien */ }
+    agrandir.addEventListener("click", function () {
+      var grande = !racine.classList.contains("roue--grande");
+      appliquerTaille(grande);
+      try { sessionStorage.setItem("roue-taille", grande ? "grande" : "normale"); } catch (e) { /* rien */ }
+      defiler(); champ.focus();
+    });
+  }
+
+  // Ouvrir dans un onglet : la conversation de cet onglet est recopiée par le navigateur dans le nouvel onglet.
+  var onglet = $("[data-roue-onglet]");
+  if (onglet) onglet.addEventListener("click", function () {
+    if (enCours) enCours.abort();
+    sauver();
+    var w = window.open(URL_PAGE, "_blank");
+    if (w) fermer(); else location.href = URL_PAGE;
+  });
   panneau.addEventListener("keydown", function (ev) { if (ev.key === "Escape") { ev.stopPropagation(); fermer(); } });
   $("[data-roue-nouvelle]").addEventListener("click", function () {
     if (enCours) enCours.abort();
@@ -378,6 +411,9 @@
   var confirmer = document.querySelector("#dialogue-deconnexion [data-confirmer]");
   if (confirmer) confirmer.addEventListener("click", oublierTout);
 
+  // Pleine page : le panneau est la page.
+  if (PLEINE_PAGE) { document.documentElement.classList.add("roue-page-dediee"); setTimeout(function () { champ.focus(); }, 60); }
+
   // Conseil affiché une seule fois sur ce navigateur.
   try {
     if (astuce && !localStorage.getItem("roue-astuce-vue") && !conversation.length) {
@@ -387,6 +423,7 @@
     }
   } catch (e) { /* stockage interdit : pas de conseil */ }
   if (astuce) $("[data-roue-astuce-fermer]").addEventListener("click", function () { astuce.hidden = true; });
+  if (PLEINE_PAGE) defiler();
 
   // Restauration de la conversation de l'onglet.
   if (conversation.length) {

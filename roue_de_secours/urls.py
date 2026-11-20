@@ -5,6 +5,7 @@ from . import vues
 app_name = "roue_de_secours"
 
 urlpatterns = [
+    path("", vues.page, name="page"),
     path("question/", vues.question, name="question"),
     path("avis/", vues.avis, name="avis"),
 ]

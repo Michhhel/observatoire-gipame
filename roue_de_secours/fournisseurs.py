@@ -63,7 +63,9 @@ def _lignes_sse(reponse):
 
 def _ouvrir(url, corps, entetes):
     requete = urllib.request.Request(url, data=json.dumps(corps).encode("utf-8"), method="POST",
-                                     headers={"content-type": "application/json", "accept": "text/event-stream", **entetes})
+                                     headers={"content-type": "application/json", "accept": "text/event-stream",
+                                              # identifiant explicite : certains relais (Cloudflare) refusent « Python-urllib »
+                                              "user-agent": "ObservatoireGIPAME-RoueDeSecours/1.0", **entetes})
     try:
         return urllib.request.urlopen(requete, timeout=reglages.DELAI_FOURNISSEUR)
     except urllib.error.HTTPError as e:
@@ -74,7 +76,9 @@ def _ouvrir(url, corps, entetes):
         raisons = {400: "requête refusée par le service d'IA", 401: "clé d'API refusée", 403: "accès refusé par le service d'IA",
                    404: "modèle ou adresse d'API introuvable (modèle retiré ?)", 429: "service d'IA saturé ou quota atteint"}
         raison = raisons.get(e.code, "service d'IA indisponible")
-        journal.error("Roue de Secours : le fournisseur a répondu HTTP %s (%s)", e.code, raison)
+        # Le détail renvoyé par le service (ex. « API key not valid ») aide au diagnostic ; il ne contient pas la clé.
+        journal.error("Roue de Secours : le fournisseur a répondu HTTP %s (%s) : %s", e.code, raison,
+                      " ".join(detail.split())[:300])
         raise ErreurFournisseur(raison, f"HTTP {e.code} {detail[:300]}")
     except (urllib.error.URLError, TimeoutError, OSError) as e:
         journal.error("Roue de Secours : fournisseur injoignable (%s)", type(e).__name__)
@@ -142,6 +146,13 @@ class CompatibleOpenAI(Fournisseur):
         messages += _messages_alternes(requete.messages)
         corps = {"model": self.modele, "messages": messages, "stream": True, "max_tokens": requete.max_jetons,
                  "temperature": 0.3}
+        if "generativelanguage.googleapis.com" in self.url:
+            # Gemini 3 : Google recommande de garder la température par défaut (1.0) ; la réflexion est réglée sur
+            # « low » (plus rapide) et la limite de sortie est relevée pour que la réflexion ne coupe pas la réponse.
+            del corps["temperature"]
+            corps["max_tokens"] = max(requete.max_jetons, reglages.REPONSE_MAX_JETONS_REFLEXION)
+        if reglages.effort():
+            corps["reasoning_effort"] = reglages.effort()
         entetes = {"authorization": f"Bearer {self.cle}"} if self.cle else {}
         reponse = _ouvrir(self.url + "/chat/completions", corps, entetes)
         with reponse:
@@ -163,21 +174,30 @@ class CompatibleOpenAI(Fournisseur):
 
 
 class HorsLigne(Fournisseur):
-    """Sans IA : restitue les passages les plus pertinents, tels qu'écrits dans les fiches. Toujours disponible."""
+    """Sans IA : restitue LE passage le plus pertinent, tel qu'écrit dans les fiches, et signale les autres.
+    Toujours disponible ; c'est aussi le secours automatique quand le service d'IA ne répond pas."""
     nom = "hors_ligne"
     est_ia = False
 
     def diffuser(self, requete):
         from .connaissances import remplir
-        passages = requete.passages[:2]
+        contact = requete.vals.get("contact", "le secrétariat du GIPAME")
+        passages = list(requete.passages)
         if not passages:
-            yield ("Je n'ai pas trouvé de réponse à cette question dans l'aide du portail. Vous pouvez reformuler avec "
-                   f"d'autres mots, consulter la page [Aide](/aide/) ou écrire à {requete.vals.get('contact', 'le secrétariat du GIPAME')}.")
+            yield ("Je n'ai pas trouvé de passage de l'aide qui corresponde à votre question. Essayez avec d'autres mots "
+                   f"(par exemple « déposer mon fichier », « date limite », « corriger »), consultez la page [Aide](/aide/) "
+                   f"ou écrivez à {contact}.")
             return
-        yield "Voici ce que dit l'aide du portail :\n\n"
-        for i, p in enumerate(passages):
-            titre = p.titre or p.titre_fiche
-            yield ("\n\n" if i else "") + f"**{titre}**\n\n{remplir(p.texte, requete.vals)}"
+        premier = passages[0]
+        titre = premier.titre or premier.titre_fiche
+        yield f"**{titre}**\n\n{remplir(premier.texte, requete.vals)}"
+        autres, vus = [], {(premier.fiche_id, premier.titre)}
+        for p in passages[1:]:
+            if (p.fiche_id, p.titre) not in vus and len(autres) < 2:
+                vus.add((p.fiche_id, p.titre))
+                autres.append(p.titre or p.titre_fiche)
+        if autres:
+            yield "\n\nÀ voir aussi dans l'aide : " + " ; ".join(f"« {a} »" for a in autres) + "."
 
 
 def construire(nom=None):

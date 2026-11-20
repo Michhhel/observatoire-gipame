@@ -1,11 +1,12 @@
 # Roue de Secours — l'assistant d'aide du portail
 
 > « Pour vous dépanner si vous êtes perdu sur le site. »
-> Module `roue_de_secours/`, ajouté le 20/11/2026. 46 tests automatiques, dont 7 de non-fuite.
+> Module `roue_de_secours/`, ajouté le 20/11/2026. 52 tests automatiques, dont 7 de non-fuite.
 
 ## 1. Ce que c'est
 
-Un bouton « Besoin d'aide ? » en bas à droite de chaque page connectée ouvre un panneau de conversation. On y pose
+Un bouton « Besoin d'aide ? » en bas à droite de chaque page connectée ouvre un panneau de conversation. On peut
+l'agrandir, ou l'ouvrir dans un onglet dédié (`/roue-de-secours/`). On y pose
 une question en langage courant (« j'ai soumis avec une erreur, je peux corriger ? », « que veut dire Gabarit déjà
 utilisé ? », « qui n'a pas encore déclaré ? ») et la Roue de Secours répond en quelques secondes. Sa réponse est
 courte, cite les pages du portail par des liens cliquables et indique les fiches d'aide utilisées.
@@ -55,7 +56,7 @@ consignes (ce qu'on attend d'elle) + passages + situation ───────�
 
 - **Recherche lexicale plutôt que vectorielle (choix délibéré).** La base est petite, rédigée avec le vocabulaire du
   portail, et chaque fiche liste les formulations des utilisateurs (`questions:`). La recherche est instantanée,
-  gratuite, explicable, sans service externe, et elle est mesurée : 53 questions d'évaluation, 100 % retrouvées. Une
+  gratuite, explicable, sans service externe, et elle est mesurée : 57 questions d'évaluation, 100 % retrouvées. Une
   recherche vectorielle ne deviendra utile que si la base dépasse quelques centaines de fiches ; on pourra alors
   l'ajouter à côté sans rien changer d'autre.
 - **Consignes** (`consignes.py`) : ton, style, et les règles absolues sur la confidentialité, l'absence d'action et
@@ -74,6 +75,21 @@ consignes (ce qu'on attend d'elle) + passages + situation ───────�
 | `GIPAME_ROUE_URL_API` | Pour un service « compatible OpenAI ». Exemple : `https://api.mistral.ai/v1`, avec dans `GIPAME_ROUE_MODELE` le nom du modèle choisi chez ce prestataire. |
 | `GIPAME_ROUE_FOURNISSEUR` | `auto` par défaut : `anthropic`, `openai` ou `hors_ligne` pour forcer un mode. |
 | `GIPAME_ROUE_PRESTATAIRE` | Nom affiché dans la charte de confidentialité (exemple : « Mistral AI (France) »). |
+
+**Brancher un fournisseur (exemples).** Toutes ces variables se règlent dans Render → Environment. Rien d'autre à
+modifier dans le code.
+
+| Fournisseur | `GIPAME_ROUE_URL_API` | `GIPAME_ROUE_MODELE` | Remarques |
+|---|---|---|---|
+| Anthropic | (vide) | `claude-haiku-5-5` ou `claude-sonnet-5-5` | payant ; serveurs aux États-Unis |
+| DeepSeek | `https://api.deepseek.com` | `deepseek-flash` | très bon marché ; serveurs en Chine |
+| Groq | `https://api.groq.com/openai/v1` | nom d'un modèle listé dans la console Groq | offre gratuite plafonnée, sans carte |
+| Gemini (Google) | `https://generativelanguage.googleapis.com/v1beta/openai/` | `gemini-3.6-flash` (stable) ou `gemini-3.5-flash-lite` (plus rapide) | **choisi pour la démo** ; offre gratuite : Google peut utiliser les échanges et les faire relire par des personnes, donc démonstration seulement. Réglages automatiques : température par défaut, réflexion « low » (`GIPAME_ROUE_EFFORT` pour changer), marge de 4 096 jetons |
+| Mistral | `https://api.mistral.ai/v1` | nom du modèle choisi | société européenne |
+
+En démonstration (données fictives), toutes ces options conviennent. En production réelle, voir §6.1 avant toute clé.
+**Aucun entraînement n'est nécessaire** : le modèle ne mémorise rien. Il lit à chaque question les consignes et les
+passages retrouvés. Le « réglage fin » d'un modèle n'apporterait rien ici et figerait des informations qui changent.
 
 Pour essayer une clé ou un modèle avant de le mettre en ligne :
 
@@ -151,7 +167,7 @@ question fautive au jeu d'évaluation, puis lancer `roue_verifier` et pousser. L
 | `consignes.py` | Ce qu'on attend du modèle (ton, règles, format) |
 | `fournisseurs.py` | Anthropic, compatible OpenAI, hors ligne ; erreurs lisibles |
 | `conversation.py` | Préparer (base) puis diffuser (sans base) ; bascule automatique |
-| `vues.py`, `urls.py` | `POST /roue-de-secours/question/` (flux JSON), `POST /roue-de-secours/avis/` |
+| `vues.py`, `urls.py` | `GET /roue-de-secours/` (pleine page), `POST /roue-de-secours/question/` (flux JSON), `POST /roue-de-secours/avis/` |
 | `contexte.py`, `templatetags/roue.py` | Panneau et suggestions selon la page ; paragraphe de la charte |
 | `templates/`, `static/` | Panneau, logo (roue de secours avec sa valve), CSS, JS ; animations désactivées si l'utilisateur le demande |
 | `evaluation.py` | Jeu d'évaluation de la recherche |

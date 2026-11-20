@@ -173,6 +173,35 @@
 .roue__mention { margin: 8px 16px 12px; font-size: 11.5px; line-height: 1.4; color: var(--texte-3); text-align: center; }
 .roue__mention a { color: inherit; }
 
+/* ------------------------------------------------------------------ agrandi */
+.roue--grande .roue__panneau {
+  width: min(880px, calc(100vw - 2 * var(--roue-marge)));
+  height: calc(100vh - 110px); height: calc(100dvh - 110px);
+}
+.roue--grande .roue__msg { max-width: 82%; }
+.roue--grande .roue__msg--roue { width: 82%; }
+.roue__icone-reduire { display: none; }
+.roue--grande .roue__icone-agrandir { display: none; }
+.roue--grande .roue__icone-reduire { display: block; }
+
+/* ------------------------------------------------------------------ pleine page (onglet dédié) */
+.roue--page .roue__panneau {
+  position: static; width: 100%; max-width: 920px; margin: 0 auto;
+  height: calc(100vh - 230px); height: calc(100dvh - 230px); min-height: 460px;
+  animation: none; box-shadow: var(--ombre-2), 0 0 0 1px var(--bord);
+}
+.roue--page .roue__msg { max-width: 78%; }
+.roue--page .roue__msg--roue { width: 78%; }
+.roue--page .roue__fil { padding: 24px 28px 10px; }
+.roue__simplifie { padding: 10px 12px; border-radius: 10px; background: var(--alerte-100); color: var(--alerte-700) !important; font-size: var(--t-13) !important; }
+
+/* Le bouton reste au premier plan pendant la transition entre deux pages (sinon il passe sous le contenu
+   le temps de l'animation et semble « apparaître » ensuite). */
+.roue__lanceur { view-transition-name: roue-lanceur; }
+::view-transition-group(roue-lanceur) { animation: none; z-index: 100; }
+::view-transition-old(roue-lanceur) { display: none; }
+::view-transition-new(roue-lanceur) { animation: none; }
+
 /* Les messages flash du portail remontent au-dessus du lanceur. */
 body:has(.roue) .messages-flash { bottom: calc(var(--e-4) + 72px); }
 
@@ -186,7 +215,11 @@ body:has(.roue) .messages-flash { bottom: calc(var(--e-4) + 72px); }
   .roue__msg, .roue__msg--roue { max-width: 100%; width: auto; }
   .roue__msg--roue { width: 100%; }
   .roue__saisie textarea { font-size: 16px; } /* évite le zoom automatique sur iPhone */
-  html.roue-ouverte, html.roue-ouverte body { overflow: hidden; }
+  .roue__icone--agrandir { display: none; } /* déjà plein écran sur téléphone */
+  .roue--page .roue__panneau { height: calc(100dvh - 160px); border-radius: 14px; }
+  .roue--page .roue__fil { padding: 16px 14px 8px; }
+  .roue--page .roue__msg, .roue--page .roue__msg--roue { max-width: 100%; width: 100%; }
+  html.roue-ouverte:not(.roue-page-dediee), html.roue-ouverte:not(.roue-page-dediee) body { overflow: hidden; }
   html.roue-ouverte .roue__lanceur { display: none; }
 }
 

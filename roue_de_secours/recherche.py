@@ -45,7 +45,35 @@ SYNONYMES = [
     "approuver approbation accord accords",
     "compte comptes utilisateur utilisateurs",
     "zero rien aucune",
+    "chatbot assistant robot bot ia roue secours",
+    "sers sert servir utilite role",
 ]
+
+# Une question ne dépend de la précédente que si elle a l'air d'une relance (« et ensuite ? », « et pour mars ? »).
+RE_RELANCE = re.compile(r"^\s*(et|puis|ensuite|alors|mais|donc|sinon|ok|d'accord|ca|ça|cela|là|comment ca|comment ça)\b",
+                        re.IGNORECASE)
+
+# Intention reconnue sans IA : demander les chiffres d'une AUTRE société → la fiche « Qui voit quoi » passe devant.
+RE_CHIFFRES = re.compile(r"\b(combien|ventes?|vendu|vend|chiffres?|quantit\w*|parts? de march\w*|classement|leader)\b", re.I)
+RE_AUTRUI = re.compile(r"\b(concurrents?|autres? (membres?|soci\w+|concessionnaires?|marques?)|tous les membres|chaque membre|"
+                       r"[a-z]+\d+|le plus|la plus)\b", re.I)
+RE_SOI = re.compile(r"\b(mes|mon|ma|nos|notre)\b", re.I)
+MOTS_DU_PORTAIL = {"Excel", "GIPAME", "AJOUTS", "DECLARATION", "LISEZ", "Observatoire", "Roue", "Secours", "Mon", "Le",
+                   "Quelles", "Quelle", "Quel", "Quels", "Combien", "Qui", "Est", "Donne", "Donnez"}
+INTENTION_AUTRUI = ("confidentialite", "Qui voit quoi")
+BONUS_INTENTION = 12.0
+
+
+def demande_chiffres_d_autrui(question):
+    if not RE_CHIFFRES.search(question) or RE_SOI.search(question):
+        return False
+    mots_saisis = re.findall(r"[\w-]+", question)[1:]  # le premier mot porte une majuscule de début de phrase
+    noms_propres = [m for m in mots_saisis if m[:1].isupper() and m not in MOTS_DU_PORTAIL]
+    return bool(RE_AUTRUI.search(question) or noms_propres)
+
+
+def est_relance(question):
+    return bool(RE_RELANCE.match(question)) or len(termes(question)) <= 1
 POIDS_SYNONYME = 0.45
 K1, B = 1.2, 0.75
 BONUS_QUESTION = 8.0   # la question ressemble à une des formulations listées par la fiche (`questions:`)
@@ -125,6 +153,9 @@ class Index:
     def chercher(self, question, role, k=5, seuil=1.5, contexte=""):
         """Les k meilleures sections visibles par `role`. `contexte` (question précédente) aide à comprendre une
         relance courte (« et ensuite ? ») sans écraser une vraie nouvelle question."""
+        if not est_relance(question):
+            contexte = ""  # nouvelle question : la précédente ne doit pas l'orienter
+        intention = demande_chiffres_d_autrui(question)
         requete = termes_requete(question)
         nb_question = len(requete)
         dans_question = {t for g in requete for t in g}
@@ -145,7 +176,10 @@ class Index:
                 score += meilleur_terme
                 if meilleur_terme and i < nb_question:
                     couverts += 1
-            if score <= 0 or (nb_question >= 3 and couverts / nb_question < COUVERTURE_MIN):
+            cible = intention and (s.fiche_id, s.titre) == INTENTION_AUTRUI
+            if cible:
+                score += BONUS_INTENTION
+            elif score <= 0 or (nb_question >= 3 and couverts / nb_question < COUVERTURE_MIN):
                 continue
             if saisis and formulations:  # coefficient de Dice avec la formulation la plus proche
                 score += BONUS_QUESTION * max(2 * len(saisis & f) / (len(saisis) + len(f)) for f in formulations)
