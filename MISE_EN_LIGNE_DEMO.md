@@ -148,3 +148,22 @@ Message possible :
 - **Chemin Windows avec apostrophe** (`C:\Users\N'…`) : ne jamais y placer un fichier appelé depuis Python.
 - **Secrets à l'écran** : les mots de passe de la démonstration ont été affichés pendant l'installation et n'ont pas été
   changés (choix assumé : données fictives). Ne pas réutiliser ce projet Neon ni ces adresses pour la version réelle.
+
+## 8. Mise à jour du 20/11/2026 : la Roue de Secours (assistant d'aide)
+
+1. **Migration sur la base de démonstration** (une table nouvelle, isolée). Elle se lance depuis votre poste avec
+   l'adresse PROPRIÉTAIRE de la branche `demo`, qui ne doit jamais être enregistrée sur Render ni sur GitHub :
+   ```
+   $env:GIPAME_DB_URL = "<adresse propriétaire de la branche demo>"
+   python manage.py migrate
+   Remove-Item Env:GIPAME_DB_URL
+   ```
+2. `git push`. Render redéploie seul et applique le nouveau démarrage (`gthread`). Si Render signale de nouvelles
+   variables (`GIPAME_ROUE_CLE_API`, `GIPAME_ROUE_MODELE`), on peut les laisser vides.
+3. **Sans clé**, la Roue répond en mode simplifié (extraits des fiches). **Avec une clé** (démonstration seulement,
+   données fictives) : Render → Environment → `GIPAME_ROUE_CLE_API`, puis redéploiement. Essai préalable depuis le
+   poste : `python manage.py roue_essai "Comment déclarer ?"`.
+4. Vérifier : connexion avec un profil d'essai, bouton « Besoin d'aide ? » en bas à droite, une question, une réponse.
+
+Pour tout le reste, voir `ROUE_DE_SECOURS.md`.
+

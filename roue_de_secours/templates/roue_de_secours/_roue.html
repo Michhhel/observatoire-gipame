@@ -1,0 +1,51 @@
+{% load static %}{# Roue de Secours : lanceur + panneau. Inclus par portail/base.html pour les comptes connectés. #}
+<div class="roue" data-roue data-cle="{{ roue.cle }}" data-csrf="{{ csrf_token }}" data-ia="{{ roue.ia|yesno:'1,0' }}"
+     data-url-question="{% url 'roue_de_secours:question' %}" data-url-avis="{% url 'roue_de_secours:avis' %}">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">{% include "roue_de_secours/_logo.svg" %}</svg>
+
+  <p class="roue__astuce" data-roue-astuce hidden>Perdu sur le site ? Je peux vous dépanner.
+    <button type="button" class="roue__astuce-fermer" data-roue-astuce-fermer aria-label="Masquer ce conseil">×</button></p>
+
+  <button class="roue__lanceur" type="button" aria-expanded="false" aria-controls="roue-panneau" data-roue-lanceur>
+    <span class="roue__disque"><svg class="roue__logo" aria-hidden="true" data-roue-logo-lanceur><use href="#roue-logo"/></svg></span>
+    <span class="roue__lanceur-texte">Besoin d'aide ?</span>
+    <span class="roue__pastille" data-roue-pastille hidden><span class="visuellement-cache">Une réponse vous attend</span></span>
+  </button>
+
+  <section class="roue__panneau" id="roue-panneau" role="dialog" aria-modal="false" aria-labelledby="roue-titre" hidden data-roue-panneau>
+    <header class="roue__tete">
+      <span class="roue__embleme" data-roue-embleme><svg class="roue__logo" aria-hidden="true" data-roue-logo><use href="#roue-logo"/></svg></span>
+      <div class="roue__titres">
+        <h2 id="roue-titre">Roue de Secours</h2>
+        <p class="roue__etat" data-roue-etat>Pour vous dépanner sur le portail</p>
+      </div>
+      <button type="button" class="roue__icone" data-roue-nouvelle title="Nouvelle conversation" aria-label="Nouvelle conversation">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/></svg></button>
+      <button type="button" class="roue__icone" data-roue-fermer title="Fermer" aria-label="Fermer la Roue de Secours">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12"/><path d="M18 6 6 18"/></svg></button>
+    </header>
+
+    <div class="roue__fil" data-roue-fil role="log" aria-label="Conversation avec la Roue de Secours">
+      <div class="roue__accueil" data-roue-accueil>
+        <p class="roue__bonjour">Bonjour, je suis la Roue de Secours.</p>
+        <p>Une démarche, un message que vous ne comprenez pas, une page introuvable ? Posez votre question, je vous dépanne.</p>
+        <ul class="roue__suggestions" aria-label="Questions suggérées">
+          {% for s in roue.suggestions %}<li><button type="button" data-roue-suggestion>{{ s }}</button></li>{% endfor %}
+        </ul>
+      </div>
+    </div>
+    <p class="visuellement-cache" aria-live="polite" data-roue-annonce></p>
+
+    <form class="roue__saisie" data-roue-formulaire>
+      <label for="roue-question" class="visuellement-cache">Votre question</label>
+      <textarea id="roue-question" rows="1" maxlength="800" placeholder="Posez votre question…" autocomplete="off" data-roue-question></textarea>
+      <span class="roue__compteur" data-roue-compteur hidden></span>
+      <button type="submit" class="roue__envoyer" data-roue-envoyer aria-label="Envoyer la question">
+        <svg class="roue__envoyer-fleche" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+        <svg class="roue__envoyer-stop" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"/></svg>
+      </button>
+    </form>
+    <p class="roue__mention">Réponses tirées de l'aide du portail{% if roue.ia %}, rédigées par une IA{% endif %}.
+      N'écrivez jamais de chiffres de ventes ici. <a href="{% url 'portail:confidentialite' %}#roue-de-secours">En savoir plus</a></p>
+  </section>
+</div>

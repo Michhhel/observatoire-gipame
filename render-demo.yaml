@@ -12,7 +12,8 @@ services:
     branch: main
     autoDeploy: true
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
-    startCommand: gunicorn config.wsgi:application --workers 2 --timeout 120 --access-logfile -
+    # gthread : une réponse de la Roue de Secours diffusée au fil de l'eau occupe un fil, pas un processus entier.
+    startCommand: gunicorn config.wsgi:application --workers 2 --worker-class gthread --threads 4 --timeout 120 --access-logfile -
     healthCheckPath: /sante/
     envVars:
       - key: DJANGO_DEBUG
@@ -26,4 +27,9 @@ services:
       - key: GIPAME_DB_URL             # URL Neon de la base de DÉMO, rôle gipame_app (PAS le propriétaire), ?sslmode=require
         sync: false
       - key: GIPAME_URL_PUBLIQUE       # ex. https://observatoire-gipame-demo.onrender.com (sans / final)
+        sync: false
+      # --- Roue de Secours (assistant d'aide). Sans clé : mode simplifié (extraits des fiches, sans IA). Voir ROUE_DE_SECOURS.md
+      - key: GIPAME_ROUE_CLE_API       # clé du prestataire d'IA (Anthropic par défaut) ; laisser vide = sans IA
+        sync: false
+      - key: GIPAME_ROUE_MODELE        # vide = modèle par défaut (claude-haiku-5-5) ; à revoir chaque année
         sync: false

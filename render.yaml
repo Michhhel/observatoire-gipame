@@ -11,7 +11,8 @@ services:
     branch: main
     autoDeploy: true
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
-    startCommand: gunicorn config.wsgi:application --workers 2 --timeout 120 --access-logfile -
+    # gthread : une réponse de la Roue de Secours diffusée au fil de l'eau occupe un fil, pas un processus entier.
+    startCommand: gunicorn config.wsgi:application --workers 2 --worker-class gthread --threads 4 --timeout 120 --access-logfile -
     healthCheckPath: /sante/
     envVars:
       - key: DJANGO_DEBUG
@@ -33,4 +34,10 @@ services:
       - key: GIPAME_SMTP_UTILISATEUR
         sync: false
       - key: GIPAME_SMTP_MOT_DE_PASSE
+        sync: false
+      # --- Roue de Secours : NE PAS renseigner de clé d'IA en production avant l'accord écrit du GIPAME
+      #     (transfert de questions vers un prestataire hors de Côte d'Ivoire, voir ROUE_DE_SECOURS.md §6).
+      - key: GIPAME_ROUE_CLE_API
+        sync: false
+      - key: GIPAME_ROUE_MODELE
         sync: false

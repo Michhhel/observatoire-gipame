@@ -1,0 +1,221 @@
+/* Roue de Secours — assistant d'aide du portail.
+   Une seule idée visuelle : la roue. Elle roule à l'ouverture, tourne pendant la recherche, avance au rythme du texte
+   qui arrive, se pose à la fin, et « crève » (vacille) en cas d'erreur. Tout le reste reste calme et sobre.
+   Couleurs : celles du portail (tokens.css). Mouvement : désactivé si « réduire les animations » est demandé. */
+
+.roue { --roue-largeur: 400px; --roue-marge: 20px; font-family: var(--police); }
+.roue [hidden] { display: none !important; }
+
+/* ------------------------------------------------------------------ lanceur */
+.roue__lanceur {
+  position: fixed; right: var(--roue-marge); bottom: var(--roue-marge); z-index: 60;
+  display: inline-flex; align-items: center; gap: 10px; height: 56px; padding: 0 20px 0 8px;
+  border: 0; border-radius: var(--rayon-rond); cursor: pointer;
+  background: var(--nuit-900); color: #fff; font: 600 var(--t-14)/1 var(--police); letter-spacing: .01em;
+  box-shadow: 0 12px 30px -10px rgba(11, 18, 56, .55), 0 2px 6px rgba(11, 18, 56, .2);
+  transition: transform var(--duree-2) var(--courbe), box-shadow var(--duree-2) var(--courbe), background var(--duree-1);
+}
+.roue__lanceur:hover { background: var(--nuit-800); transform: translateY(-2px); }
+.roue__lanceur:focus-visible { outline: 3px solid var(--petrole-300); outline-offset: 3px; }
+.roue__disque { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: #fff; }
+.roue__lanceur .roue__logo { width: 34px; height: 34px; transition: transform 600ms cubic-bezier(.3, .8, .3, 1.15); }
+/* Au survol, la roue avance d'un rayon (un cinquième de tour). */
+.roue__lanceur:hover .roue__logo { transform: rotate(72deg); }
+.roue__lanceur[aria-expanded="true"] .roue__lanceur-texte::after { content: " · fermer"; font-weight: 400; opacity: .7; }
+.roue--occupee .roue__lanceur .roue__logo { animation: roue-tourne 1.3s linear infinite; }
+.roue__pastille {
+  position: absolute; top: 6px; left: 38px; width: 12px; height: 12px; border-radius: 50%;
+  background: #E0892B; box-shadow: 0 0 0 2px var(--nuit-900);
+}
+
+.roue__astuce {
+  position: fixed; right: var(--roue-marge); bottom: calc(var(--roue-marge) + 68px); z-index: 60; margin: 0;
+  max-width: 260px; padding: 10px 34px 10px 14px; border-radius: 12px 12px 4px 12px;
+  background: #fff; color: var(--texte); font-size: var(--t-14); line-height: 1.4;
+  box-shadow: var(--ombre-3); border: 1px solid var(--bord); animation: roue-apparait 300ms var(--courbe);
+}
+.roue__astuce-fermer {
+  position: absolute; top: 4px; right: 4px; width: 26px; height: 26px; border: 0; border-radius: 50%;
+  background: transparent; color: var(--texte-3); font-size: 18px; line-height: 1; cursor: pointer;
+}
+.roue__astuce-fermer:hover { background: var(--surface-2); color: var(--texte); }
+
+/* ------------------------------------------------------------------ panneau */
+.roue__panneau {
+  position: fixed; right: var(--roue-marge); bottom: calc(var(--roue-marge) + 68px); z-index: 61;
+  width: min(var(--roue-largeur), calc(100vw - 2 * var(--roue-marge)));
+  height: min(640px, calc(100vh - 120px)); height: min(640px, calc(100dvh - 120px));
+  display: flex; flex-direction: column; overflow: hidden;
+  background: var(--fond); color: var(--texte); border-radius: 18px;
+  box-shadow: 0 30px 80px -24px rgba(11, 18, 56, .5), 0 0 0 1px rgba(11, 18, 56, .06);
+  transform-origin: bottom right; animation: roue-panneau-entree 240ms var(--courbe);
+}
+
+.roue__tete {
+  display: flex; align-items: center; gap: 12px; padding: 14px 10px 14px 14px;
+  background: var(--nuit-900); color: #fff;
+}
+.roue__embleme {
+  flex: none; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: #fff;
+  animation: roue-roule-entree 700ms cubic-bezier(.25, .8, .3, 1.1);
+}
+.roue__embleme .roue__logo { width: 40px; height: 40px; transition: transform 380ms linear; }
+.roue__embleme.roue--crevaison { animation: roue-crevaison 650ms ease-in-out; }
+.roue--occupee .roue__embleme .roue__logo.roue--tourne { animation: roue-tourne 1.1s linear infinite; }
+.roue__titres { flex: 1; min-width: 0; }
+.roue__titres h2 { margin: 0; font-size: var(--t-16); font-weight: 650; letter-spacing: .005em; color: #fff; }
+.roue__etat { margin: 2px 0 0; font-size: var(--t-13); color: rgba(255, 255, 255, .72); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.roue__icone {
+  flex: none; display: grid; place-items: center; width: 36px; height: 36px; border: 0; border-radius: 10px;
+  background: transparent; color: rgba(255, 255, 255, .8); cursor: pointer;
+}
+.roue__icone svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.roue__icone:hover { background: rgba(255, 255, 255, .1); color: #fff; }
+.roue__icone:focus-visible, .roue__envoyer:focus-visible, .roue__suggestions button:focus-visible,
+.roue__avis button:focus-visible, .roue__sources a:focus-visible { outline: 3px solid var(--petrole-300); outline-offset: 2px; }
+
+/* ------------------------------------------------------------------ fil de la conversation */
+.roue__fil { flex: 1; overflow-y: auto; padding: 18px 16px 8px; display: flex; flex-direction: column; gap: 14px; overscroll-behavior: contain; }
+.roue__accueil { padding: 4px 2px 0; }
+.roue__accueil p { margin: 0 0 10px; font-size: var(--t-14); color: var(--texte-2); line-height: 1.5; }
+.roue__accueil .roue__bonjour { font-size: var(--t-18); font-weight: 650; color: var(--texte); margin-bottom: 6px; }
+.roue__suggestions { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.roue__suggestions button {
+  text-align: left; padding: 9px 14px; border-radius: 12px; cursor: pointer; font: 500 var(--t-14)/1.35 var(--police);
+  background: var(--surface); color: var(--petrole-700); border: 1px solid var(--petrole-100);
+  transition: border-color var(--duree-1), background var(--duree-1);
+}
+.roue__suggestions button:hover { border-color: var(--petrole-500); background: var(--petrole-50); }
+
+.roue__msg { max-width: 92%; font-size: var(--t-14); line-height: 1.55; animation: roue-apparait 200ms var(--courbe); }
+.roue__msg--moi {
+  align-self: flex-end; padding: 10px 14px; border-radius: 16px 16px 4px 16px;
+  background: var(--petrole-700); color: #fff; white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.roue__msg--roue { align-self: flex-start; width: 92%; }
+.roue__bulle { padding: 12px 15px; border-radius: 4px 16px 16px 16px; background: var(--surface); border: 1px solid var(--bord); overflow-wrap: anywhere; }
+.roue__texte > :first-child { margin-top: 0; }
+.roue__texte > :last-child { margin-bottom: 0; }
+.roue__texte p { margin: 0 0 8px; }
+.roue__texte ul, .roue__texte ol { margin: 4px 0 8px; padding-left: 1.3em; }
+.roue__texte li { margin: 3px 0; }
+.roue__texte li::marker { color: var(--petrole-600); font-weight: 600; }
+.roue__texte strong { font-weight: 650; color: var(--nuit-900); }
+.roue__texte a { color: var(--lien); font-weight: 550; text-underline-offset: 2px; }
+.roue__texte code { font: inherit; font-size: .92em; padding: 1px 5px; border-radius: 5px; background: var(--surface-2); }
+.roue__texte--ecrit::after { /* curseur discret pendant l'écriture */
+  content: ""; display: inline-block; width: 7px; height: 1em; margin-left: 2px; vertical-align: -2px;
+  background: var(--petrole-500); border-radius: 2px; animation: roue-curseur 1s steps(2) infinite;
+}
+.roue__msg--erreur .roue__bulle { border-color: #F5C2BD; background: #FFF8F7; }
+.roue__note { margin: 8px 0 0; font-size: var(--t-12); color: var(--alerte-700); }
+
+/* La réflexion : une petite roue qui roule sur une route en pointillés. */
+.roue__reflexion { display: flex; align-items: center; gap: 12px; color: var(--texte-2); font-size: var(--t-14); }
+.roue__route { position: relative; flex: none; width: 64px; height: 20px; }
+.roue__route::after { /* la route, qui défile sous la roue */
+  content: ""; position: absolute; left: 0; right: 0; bottom: 1px; height: 2px; border-radius: 2px;
+  background: repeating-linear-gradient(90deg, var(--bord-fort) 0 6px, transparent 6px 11px);
+  animation: roue-route-defile 600ms linear infinite;
+}
+.roue__route .roue__logo { position: absolute; left: 0; bottom: 3px; width: 16px; height: 16px; animation: roue-va-et-vient 2.4s ease-in-out infinite; }
+
+.roue__pied { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 8px; padding-left: 2px; }
+.roue__sources { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.roue__sources span, .roue__sources a {
+  display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: var(--rayon-rond);
+  font-size: var(--t-12); color: var(--texte-2); background: var(--surface-2); border: 1px solid var(--bord); text-decoration: none;
+}
+.roue__sources a:hover { color: var(--lien); border-color: var(--petrole-300); }
+.roue__sources svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; }
+.roue__mode { font-size: var(--t-12); color: var(--alerte-700); background: var(--alerte-100); padding: 3px 10px; border-radius: var(--rayon-rond); }
+.roue__avis { display: inline-flex; gap: 4px; margin-left: auto; }
+.roue__avis button {
+  display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: 8px; cursor: pointer;
+  border: 1px solid transparent; background: transparent; color: var(--texte-3); font: 500 var(--t-12)/1 var(--police);
+}
+.roue__avis button:hover { color: var(--texte); background: var(--surface-2); }
+.roue__avis button[aria-pressed="true"] { color: var(--petrole-700); border-color: var(--petrole-100); background: var(--petrole-50); }
+.roue__avis svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.roue__retour { width: 100%; display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.roue__retour textarea { width: 100%; min-height: 56px; resize: vertical; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--bord-fort); font: var(--t-13)/1.4 var(--police); }
+.roue__retour .roue__retour-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.roue__lien-bouton { border: 0; background: none; padding: 4px 2px; color: var(--lien); font: 500 var(--t-12)/1.3 var(--police); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.roue__merci { font-size: var(--t-12); color: var(--succes-700); }
+.roue__bouton, .roue__avis .roue__bouton {
+  padding: 7px 14px; border-radius: 9px; border: 1px solid var(--nuit-900); background: var(--nuit-900); color: #fff;
+  font: 600 var(--t-13)/1 var(--police); cursor: pointer;
+}
+.roue__bouton--leger, .roue__avis .roue__bouton--leger { background: transparent; color: var(--texte-2); border-color: var(--bord-fort); }
+.roue__avis .roue__bouton:hover { background: var(--nuit-800); color: #fff; }
+.roue__avis .roue__bouton--leger:hover { background: var(--surface-2); color: var(--texte); }
+
+/* ------------------------------------------------------------------ saisie */
+.roue__saisie { position: relative; display: flex; align-items: flex-end; gap: 8px; margin: 0 12px; padding: 8px 8px 8px 14px;
+  background: var(--surface); border: 1px solid var(--bord-fort); border-radius: 16px; transition: border-color var(--duree-1), box-shadow var(--duree-1); }
+.roue__saisie:focus-within { border-color: var(--petrole-500); box-shadow: var(--anneau-focus); }
+.roue__saisie textarea {
+  flex: 1; min-height: 24px; max-height: 140px; resize: none; border: 0; outline: 0; padding: 6px 0; background: transparent;
+  font: var(--t-14)/1.45 var(--police); color: var(--texte);
+}
+.roue__saisie textarea:focus-visible { box-shadow: none; border-radius: 0; } /* l'anneau est porté par le cadre */
+.roue__compteur { position: absolute; right: 58px; bottom: 12px; font-size: var(--t-12); color: var(--texte-3); }
+.roue__envoyer {
+  flex: none; display: grid; place-items: center; width: 38px; height: 38px; border: 0; border-radius: 12px; cursor: pointer;
+  background: var(--nuit-900); color: #fff; transition: background var(--duree-1), opacity var(--duree-1);
+}
+.roue__envoyer:disabled { opacity: .35; cursor: default; }
+.roue__envoyer svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.roue__envoyer-stop { display: none; fill: currentColor !important; stroke: none !important; }
+.roue--occupee .roue__envoyer { background: var(--erreur-600); opacity: 1; }
+.roue--occupee .roue__envoyer-fleche { display: none; }
+.roue--occupee .roue__envoyer-stop { display: block; }
+.roue__mention { margin: 8px 16px 12px; font-size: 11.5px; line-height: 1.4; color: var(--texte-3); text-align: center; }
+.roue__mention a { color: inherit; }
+
+/* Les messages flash du portail remontent au-dessus du lanceur. */
+body:has(.roue) .messages-flash { bottom: calc(var(--e-4) + 72px); }
+
+/* ------------------------------------------------------------------ téléphone : plein écran */
+@media (max-width: 680px) {
+  .roue { --roue-marge: 14px; }
+  .roue__lanceur { width: 56px; padding: 0; justify-content: center; }
+  .roue__lanceur-texte { display: none; }
+  .roue__panneau { inset: 0; width: 100%; height: 100%; border-radius: 0; animation-name: roue-panneau-entree-mobile; }
+  .roue__fil { padding: 16px 14px 8px; }
+  .roue__msg, .roue__msg--roue { max-width: 100%; width: auto; }
+  .roue__msg--roue { width: 100%; }
+  .roue__saisie textarea { font-size: 16px; } /* évite le zoom automatique sur iPhone */
+  html.roue-ouverte, html.roue-ouverte body { overflow: hidden; }
+  html.roue-ouverte .roue__lanceur { display: none; }
+}
+
+@media print { .roue { display: none !important; } }
+
+/* ------------------------------------------------------------------ mouvements */
+@keyframes roue-tourne { to { transform: rotate(360deg); } }
+@keyframes roue-roule-entree { from { transform: translateX(120px) rotate(300deg); } to { transform: none; } }
+@keyframes roue-panneau-entree { from { opacity: 0; transform: translateY(14px) scale(.97); } }
+@keyframes roue-panneau-entree-mobile { from { opacity: 0; transform: translateY(24px); } }
+@keyframes roue-apparait { from { opacity: 0; transform: translateY(6px); } }
+@keyframes roue-curseur { 50% { opacity: 0; } }
+@keyframes roue-route-defile { to { background-position: -11px 0; } }
+@keyframes roue-va-et-vient {
+  0% { transform: translateX(0) rotate(0); }
+  50% { transform: translateX(48px) rotate(344deg); }
+  100% { transform: translateX(0) rotate(0); }
+}
+@keyframes roue-crevaison {
+  0%, 100% { transform: rotate(0) translateY(0); }
+  20% { transform: rotate(-16deg) translateY(2px); }
+  40% { transform: rotate(11deg) translateY(1px); }
+  60% { transform: rotate(-7deg) translateY(2px); }
+  80% { transform: rotate(3deg) translateY(1px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .roue *, .roue *::before, .roue *::after { animation: none !important; transition: none !important; }
+  .roue__lanceur:hover .roue__logo { transform: none; }
+  .roue__route::after { background: var(--bord-fort); }
+  .roue__texte--ecrit::after { display: none; }
+}

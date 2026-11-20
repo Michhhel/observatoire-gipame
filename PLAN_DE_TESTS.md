@@ -5,7 +5,7 @@ modification ; le troisième se fait sur la démonstration en ligne, avec de vra
 
 | Niveau | Quoi | Combien de temps | Qui |
 |---|---|---|---|
-| 1. Tests automatiques | 186 tests : règles de sécurité en base, fichiers Excel, parcours du portail, non-fuite | ≈ 2 min | `python manage.py test` |
+| 1. Tests automatiques | 232 tests : règles de sécurité en base, fichiers Excel, parcours du portail, non-fuite, Roue de Secours | ≈ 2 min 30 | `python manage.py test` |
 | 2. Balayage navigateur | toutes les pages × 6 profils × ordinateur/téléphone × clair/sombre (≈ 150 pages) | ≈ 10 min | `python scripts/balayage.py` |
 | 3. Tests profonds | scénarios réels, cas limites, avis des utilisateurs | 1 à 2 h par testeur | Michel et les testeurs |
 
@@ -17,7 +17,7 @@ modification ; le troisième se fait sur la démonstration en ligne, avec de vra
 D:\GIPAME\venv_gipame\Scripts\Activate.ps1 ; cd D:\GIPAME\Application_GIPAME
 python manage.py test
 ```
-Attendu : `Ran 186 tests … OK`. Un seul échec = on ne met rien en ligne avant de comprendre.
+Attendu : `Ran 232 tests … OK`. Pour l'aide seule : `python manage.py roue_verifier` (sans base de données). Un seul échec = on ne met rien en ligne avant de comprendre.
 
 Ce qu'ils couvrent : contraintes et droits en base (RLS, rôles, triggers, comptes non supprimables), seuils de
 confidentialité, gabarit (contenu, signature, structure du fichier), dépôt (erreurs, alertes, fichiers piégés,

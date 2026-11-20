@@ -1,0 +1,28 @@
+# Roue de Secours : contrôle de la base de connaissances, sans base de données ni secret.
+# - à chaque push qui touche l'aide ou le portail : une fiche cassée (lien mort, variable inconnue) bloque tout de suite ;
+# - le 1er de chaque mois : en mode strict, signale aussi les fiches non relues depuis un an et les dates écrites en dur.
+# Un échec déclenche le courriel habituel de GitHub au propriétaire du dépôt : c'est l'alerte d'obsolescence.
+name: Roue de Secours — contrôle de l'aide
+
+on:
+  push:
+    paths: ["roue_de_secours/**", "portail/**", "config/urls.py", ".github/workflows/roue-de-secours.yml"]
+  schedule:
+    - cron: "17 6 1 * *"   # le 1er du mois, 06 h 17 (heure d'Abidjan = UTC)
+  workflow_dispatch:
+
+jobs:
+  verifier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version-file: ".python-version"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Fiches et jeu d'évaluation
+        run: python manage.py roue_verifier ${{ github.event_name == 'schedule' && '--strict' || '' }}
+        env:
+          DJANGO_SECRET_KEY: controle-sans-secret
+          GIPAME_DB_HOST: base-inexistante.invalid   # la commande ne doit jamais toucher la base

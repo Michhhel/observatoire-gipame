@@ -1,4 +1,4 @@
-{% extends "portail/base.html" %}
+{% extends "portail/base.html" %}{% load roue %}
 {% block titre %}Charte de confidentialité{% endblock %}
 {% block classe_page %}page--etroite{% endblock %}
 {% block contenu %}
@@ -38,6 +38,8 @@
   <li>Connexion chiffrée (HTTPS), mots de passe stockés sous forme irréversible, compte bloqué 15 minutes après 5 essais erronés, déconnexion après 8 heures d'inactivité.</li>
   <li>Les données sont hébergées {{ hebergement }}, et sauvegardées régulièrement.</li>
 </ul></section>
+
+{% roue_charte %}
 
 <section class="carte" aria-labelledby="c6"><h2 id="c6">Vos droits</h2>
 <p>Vous pouvez demander à consulter ou rectifier les informations de votre compte, ou sa désactivation, auprès du secrétariat du GIPAME{% if p.contact_gipame and "renseigner" not in p.contact_gipame %} : {{ p.contact_gipame }}{% endif %}. Les déclarations de ventes de votre société sont conservées pour constituer les séries historiques du marché ; elles ne sont jamais publiées autrement qu'en totaux protégés.</p>

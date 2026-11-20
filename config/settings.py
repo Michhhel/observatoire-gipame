@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.postgres',
     'collecte',
     'portail',
+    'roue_de_secours',  # assistant d'aide (module autonome : voir ROUE_DE_SECOURS.md)
 ]
 
 MIDDLEWARE = [
@@ -75,6 +76,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'portail.demo.contexte',
+                'roue_de_secours.contexte.contexte',
             ],
         },
     },
@@ -195,6 +197,18 @@ HEBERGEMENT_DONNEES = os.environ.get('GIPAME_HEBERGEMENT', "chez Neon (base de d
                                      "dans des centres de données situés en Allemagne (Francfort)")
 URL_PUBLIQUE = os.environ.get('GIPAME_URL_PUBLIQUE', 'http://localhost:8000').rstrip('/')  # utilisée dans les courriels
 CSRF_TRUSTED_ORIGINS = [URL_PUBLIQUE] if URL_PUBLIQUE.startswith('https://') else []
+
+# Roue de Secours (assistant d'aide). Sans clé d'API : mode hors ligne (extraits des fiches, sans IA).
+# Fournisseur « auto » : Anthropic si GIPAME_ROUE_CLE_API seule ; « compatible OpenAI » (OpenAI, Mistral…) si
+# GIPAME_ROUE_URL_API est renseignée. Voir ROUE_DE_SECOURS.md.
+ROUE_DE_SECOURS = {
+    'ACTIVE': os.environ.get('GIPAME_ROUE_ACTIVE', '1') == '1',
+    'FOURNISSEUR': os.environ.get('GIPAME_ROUE_FOURNISSEUR', 'auto'),
+    'MODELE': os.environ.get('GIPAME_ROUE_MODELE', ''),
+    'CLE_API': os.environ.get('GIPAME_ROUE_CLE_API', ''),
+    'URL_API': os.environ.get('GIPAME_ROUE_URL_API', ''),
+    'PRESTATAIRE': os.environ.get('GIPAME_ROUE_PRESTATAIRE', ''),  # nom affiché dans la charte de confidentialité
+}
 
 # Journaux : console (Render les conserve quelques jours). Ne JAMAIS y écrire de quantité (§6.4).
 LOGGING = {

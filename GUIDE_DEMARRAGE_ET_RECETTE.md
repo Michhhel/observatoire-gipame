@@ -496,6 +496,18 @@ puis `git push`) ; renouveler la question ARTCI si l'hébergeur change.
 
 ---
 
+### 11.1 Roue de Secours (assistant d'aide) : entretien mensuel
+
+- `python manage.py roue_avis --sortie avis.md` (connexion propriétaire) : lire les avis « À revoir » et les questions
+  sans réponse ; corriger ou créer les fiches (`roue_de_secours/connaissances/`) ; ajouter les questions au jeu
+  d'évaluation ; `python manage.py roue_verifier` ; tests ; push.
+- Le contrôle mensuel GitHub Actions (« Roue de Secours — contrôle de l'aide ») envoie un courriel s'il échoue :
+  fiche non relue depuis un an, lien mort, recherche dégradée.
+- Une fois par an : `roue_avis --purger 365` ; vérifier que le modèle d'IA (`GIPAME_ROUE_MODELE`) est toujours proposé
+  par le prestataire (`roue_essai`).
+- **Production réelle** : ne pas renseigner `GIPAME_ROUE_CLE_API` sans l'accord écrit du GIPAME (transfert des
+  questions vers un prestataire étranger, voir `ROUE_DE_SECOURS.md` §6). Sans clé, le mode simplifié reste disponible.
+
 ## 12. En cas de problème
 
 | Symptôme | Cause probable | Que faire |

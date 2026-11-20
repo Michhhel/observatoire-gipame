@@ -9,6 +9,7 @@
 <link rel="icon" href="{% static 'portail/img/icone.svg' %}" type="image/svg+xml">
 <link rel="stylesheet" href="{% static 'portail/css/tokens.css' %}">
 <link rel="stylesheet" href="{% static 'portail/css/base.css' %}">
+{% if roue.active %}<link rel="stylesheet" href="{% static 'roue_de_secours/roue.css' %}">{% endif %}
 {% block tete %}{% endblock %}
 </head>
 <body data-chart-js="{% static 'portail/js/chart.umd.js' %}">
@@ -87,6 +88,8 @@
   <span style="display:block;margin-top:var(--e-2)"><a href="{% url 'portail:aide' %}">Aide</a> · <a href="{% url 'portail:confidentialite' %}">Charte de confidentialité</a></span>
 </footer>
 
+{% if roue.active %}{% include "roue_de_secours/_roue.html" %}{% endif %}
+
 {% if messages %}
 <div class="messages-flash" role="status" aria-live="polite">
   {% for m in messages %}
@@ -100,6 +103,7 @@
 
 <script src="{% static 'portail/js/htmx.min.js' %}" defer></script>
 <script src="{% static 'portail/js/portail.js' %}" defer></script>
+{% if roue.active %}<script src="{% static 'roue_de_secours/roue.js' %}" defer></script>{% endif %}
 {% block scripts %}{% endblock %}
 </body>
 </html>

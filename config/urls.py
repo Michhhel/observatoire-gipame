@@ -4,6 +4,7 @@ from django.urls import include, path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("roue-de-secours/", include("roue_de_secours.urls")),  # assistant d'aide (module autonome)
     path("", include("portail.urls")),
 ]
 
